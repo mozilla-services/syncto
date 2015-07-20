@@ -11,4 +11,5 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
 
     cliquet.initialize(config, __version__)
+    config.scan("syncto.views")
     return config.make_wsgi_app()
