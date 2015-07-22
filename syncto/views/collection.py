@@ -5,17 +5,22 @@ from cliquet import Service
 from cliquet.errors import http_error, ERRORS
 from sync.client import SyncClient
 
+from syncto.utils import base64_to_uuid4
 
-history = Service(name='history',
-                  description='Get the Firefox Sync History',
-                  path='/history')
+
+collection = Service(name='collection',
+                     description='Get the Firefox Sync Collection',
+                     path='/{collection_name}',
+                     cors_headers=('Next-Page', 'Total-Records',
+                                   'Last-Modified', 'ETag'))
 
 AUTHORIZATION_HEADER = 'Authorization'
 CLIENT_STATE_HEADER = 'X-Client-State'
 
 
-@history.get(permission=NO_PERMISSION_REQUIRED)
-def history_get(request):
+@collection.get(permission=NO_PERMISSION_REQUIRED)
+def collection_get(request):
+    collection_name = request.matchdict['collection_name']
     # Get the BID assertion
     if AUTHORIZATION_HEADER not in request.headers or \
        not request.headers[AUTHORIZATION_HEADER].lower() \
@@ -40,6 +45,24 @@ def history_get(request):
     bid_assertion = authorization_header.split(" ", 1)[1]
     client_state = request.headers[CLIENT_STATE_HEADER]
     sync_client = SyncClient(bid_assertion, client_state)
-    records = sync_client.get_records('history', full=True)
+    records = sync_client.get_records(collection_name, full=True)
+
+    for r in records:
+        r['last_modified'] = int(r.pop('modified') * 1000)
+        r['id'] = base64_to_uuid4(r.pop('id'))
+
+    # Configure headers
+    response_headers = sync_client.raw_resp.headers
+    headers = request.response.headers
+
+    last_modified = float(response_headers['X-Last-Modified'])
+    headers['ETag'] = '"%s"' % int(last_modified * 1000)
+    request.response.last_modified = last_modified
+
+    if 'X-Weave-Next-Offset' in response_headers:
+        headers['Next-Page'] = response_headers['X-Weave-Next-Offset']
+
+    if 'X-Weave-Records':
+        headers['Total-Records'] = response_headers['X-Weave-Records']
 
     return {'data': records}
