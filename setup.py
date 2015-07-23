@@ -1,7 +1,9 @@
 import os
+import sys
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
+PY2 = sys.version_info[0] == 2
 
 with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
@@ -15,6 +17,13 @@ REQUIREMENTS = [
     'cliquet[postgresql,monitoring]>=2.3,<2.4',
     'fxsync-client>=0.0.1'
 ]
+
+if PY2:
+    REQUIREMENTS += [
+        "pyopenssl",
+        "ndg-httpsclient",
+        "pyasn1"
+    ]
 
 ENTRY_POINTS = {
     'paste.app_factory': [
@@ -40,7 +49,7 @@ setup(name='syncto',
       keywords="web services",
       author='Mozilla Services',
       author_email='services-dev@mozilla.com',
-      url='',
+      url='https://syncto.readthedocs.org/',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
