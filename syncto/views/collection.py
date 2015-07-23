@@ -5,12 +5,13 @@ from cliquet import Service
 from cliquet.errors import http_error, ERRORS
 from sync.client import SyncClient
 
-from syncto.utils import base64_to_uuid4
+from syncto.utils import base64_to_uuid4, uuid4_to_base64
 
 
 collection = Service(name='collection',
                      description='Get the Firefox Sync Collection',
-                     path='/{collection_name}',
+                     path=('/buckets/syncto/collections'
+                           '/{collection_name}/records'),
                      cors_headers=('Next-Page', 'Total-Records',
                                    'Last-Modified', 'ETag'))
 
@@ -45,7 +46,29 @@ def collection_get(request):
     bid_assertion = authorization_header.split(" ", 1)[1]
     client_state = request.headers[CLIENT_STATE_HEADER]
     sync_client = SyncClient(bid_assertion, client_state)
-    records = sync_client.get_records(collection_name, full=True)
+
+    params = {}
+    if '_since' in request.GET:
+        params['newer'] = request.GET['_since']
+
+    if '_limit' in request.GET:
+        params['limit'] = request.GET['_limit']
+
+    if '_token' in request.GET:
+        params['offset'] = request.GET['_token']
+
+    if '_sort' in request.GET:
+        if request.GET['_sort'] in ('-last_modified', 'newest'):
+            params['sort'] = 'newest'
+
+        if request.GET['_sort'] in ('-sortindex', 'index'):
+            params['sort'] = 'index'
+
+    if 'ids' in request.GET:
+        params['ids'] = [uuid4_to_base64(record_id.trim())
+                         for record_id in request.GET['ids'].split(',')]
+
+    records = sync_client.get_records(collection_name, full=True, **params)
 
     for r in records:
         r['last_modified'] = int(r.pop('modified') * 1000)

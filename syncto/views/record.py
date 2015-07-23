@@ -10,7 +10,8 @@ from syncto.utils import base64_to_uuid4, uuid4_to_base64
 
 record = Service(name='record',
                  description='Get the Firefox Sync Collection',
-                 path='/{collection_name}/{record_id}',
+                 path=('/buckets/syncto/collections/'
+                       '{collection_name}/records/{record_id}'),
                  cors_headers=('Last-Modified', 'ETag'))
 
 AUTHORIZATION_HEADER = 'Authorization'
