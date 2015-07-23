@@ -2,7 +2,7 @@ from pyramid import httpexceptions
 from pyramid.security import NO_PERMISSION_REQUIRED, forget
 
 from cliquet import Service
-from cliquet.errors import http_error, ERRORS
+from cliquet.errors import http_error, ERRORS, raise_invalid
 from sync.client import SyncClient
 
 from syncto.utils import base64_to_uuid4, uuid4_to_base64
@@ -61,8 +61,16 @@ def collection_get(request):
         if request.GET['_sort'] in ('-last_modified', 'newest'):
             params['sort'] = 'newest'
 
-        if request.GET['_sort'] in ('-sortindex', 'index'):
+        elif request.GET['_sort'] in ('-sortindex', 'index'):
             params['sort'] = 'index'
+
+        else:
+            raise_invalid(request,
+                          location="querystring",
+                          name="_sort",
+                          description=("_sort should be one of ("
+                                       "'-last_modified', 'newest', "
+                                       "'-sortindex', 'index')"))
 
     if 'ids' in request.GET:
         params['ids'] = [uuid4_to_base64(record_id.trim())
