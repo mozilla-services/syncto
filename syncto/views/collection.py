@@ -5,6 +5,7 @@ from cliquet import Service
 from cliquet.errors import http_error, ERRORS, raise_invalid
 from sync.client import SyncClient
 
+from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 from syncto.utils import base64_to_uuid4, uuid4_to_base64
 
 
@@ -15,9 +16,6 @@ collection = Service(name='collection',
                      cors_headers=('Next-Page', 'Total-Records',
                                    'Last-Modified', 'ETag'))
 
-AUTHORIZATION_HEADER = 'Authorization'
-CLIENT_STATE_HEADER = 'X-Client-State'
-
 
 @collection.get(permission=NO_PERMISSION_REQUIRED)
 def collection_get(request):
@@ -26,7 +24,8 @@ def collection_get(request):
     if AUTHORIZATION_HEADER not in request.headers or \
        not request.headers[AUTHORIZATION_HEADER].lower() \
                                                 .startswith("browserid"):
-        error_msg = "Provide an Authorization BID assertion header."
+        error_msg = "Provide a BID assertion %s header." % (
+            AUTHORIZATION_HEADER)
         response = http_error(httpexceptions.HTTPUnauthorized(),
                               errno=ERRORS.MISSING_AUTH_TOKEN,
                               message=error_msg)
@@ -34,7 +33,9 @@ def collection_get(request):
         return response
 
     if CLIENT_STATE_HEADER not in request.headers:
-        error_msg = "Provide the tokenserver Client-State header."
+        error_msg = "Provide the tokenserver %s header." % (
+            CLIENT_STATE_HEADER
+        )
         response = http_error(httpexceptions.HTTPUnauthorized(),
                               errno=ERRORS.MISSING_AUTH_TOKEN,
                               message=error_msg)

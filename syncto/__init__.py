@@ -14,6 +14,9 @@ except ImportError:
 else:
     pyopenssl.inject_into_urllib3()
 
+AUTHORIZATION_HEADER = 'Authorization'
+CLIENT_STATE_HEADER = 'X-Client-State'
+
 
 def main(global_config, **settings):
     config = Configurator(settings=settings)
