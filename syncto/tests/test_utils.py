@@ -7,7 +7,7 @@ from uuid import uuid4, UUID
 
 from syncto.utils import (
     bytes_to_uuid4, UUID4_VALIDATOR, uuid4_to_bytes, base64url_encode,
-    base64_to_uuid4, uuid4_to_base64
+    base64_to_uuid4, uuid4_to_base64, base64url_decode
 )
 
 
@@ -82,3 +82,18 @@ class Base64ToUUIDConverterIdempotenceTest(unittest.TestCase):
         base64_id = uuid4_to_base64(uuid4_id)
         computed_uuid4_id = base64_to_uuid4(base64_id)
         self.assertEqual(uuid4_id, computed_uuid4_id)
+
+
+class Base64urlEncoderDecoderTest(unittest.TestCase):
+
+    def test_base64url_decode_handle_unicode(self):
+        string = base64url_encode(os.urandom(16)).decode('utf-8')
+        self.assertTrue(isinstance(string, text_type), type(string))
+        decoded = base64url_decode(string)
+        self.assertTrue(isinstance(decoded, binary_type), type(string))
+
+    def test_base64url_encode_handle_unicode(self):
+        string = text_type("foobar")
+        self.assertTrue(isinstance(string, text_type), type(string))
+        decoded = base64url_encode(string)
+        self.assertTrue(isinstance(decoded, binary_type), type(string))
