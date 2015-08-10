@@ -74,8 +74,15 @@ def collection_get(request):
                                        "'-sortindex', 'index')"))
 
     if 'ids' in request.GET:
-        params['ids'] = [uuid4_to_base64(record_id.trim())
-                         for record_id in request.GET['ids'].split(',')]
+        try:
+            params['ids'] = [uuid4_to_base64(record_id.strip())
+                             for record_id in request.GET['ids'].split(',')
+                             if record_id]
+        except ValueError:
+            raise_invalid(request,
+                          location="querystring",
+                          name="ids",
+                          description=("Invalid id in ids list."))
 
     records = sync_client.get_records(collection_name, full=True, **params)
 

@@ -71,13 +71,14 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
         with mock.patch("syncto.views.collection.SyncClient") as SyncClient:
             SyncClient.return_value._authenticate.return_value = None
-            SyncClient.return_value.get_record.return_value = {
+            SyncClient.return_value.get_records.return_value = [{
                 "id": "Y_-5-LEeQBuh60IT0MyWEQ",
                 "modified": 14377478425.69
-            }
+            }]
             SyncClient().raw_resp.headers = {}
             SyncClient().raw_resp.headers['X-Last-Modified'] = '14377478425.69'
             SyncClient().raw_resp.headers['X-Weave-Records'] = '1'
+            SyncClient().raw_resp.headers['X-Weave-Next-Offset'] = '12345'
 
             resp = self.app.get(self.collection_url,
                                 headers=headers, status=200)
@@ -101,3 +102,102 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             resp = self.app.get(self.record_url,
                                 headers=headers, status=200)
             self.assertIn('Access-Control-Allow-Origin', resp.headers)
+
+    def test_collection_handle_since_parameter(self):
+        headers = self.headers.copy()
+        headers.update({
+            AUTHORIZATION_HEADER: "BrowserID abcd",
+            CLIENT_STATE_HEADER: "1234",
+            'Origin': 'http://localhost:8000'
+        })
+
+        with mock.patch("syncto.views.collection.SyncClient") as SyncClient:
+            SyncClient.return_value._authenticate.return_value = None
+            SyncClient.return_value.get_records.return_value = [{
+                "id": "Y_-5-LEeQBuh60IT0MyWEQ",
+                "modified": 14377478425.69
+            }]
+            SyncClient().raw_resp.headers = {}
+            SyncClient().raw_resp.headers['X-Last-Modified'] = '14377478425.69'
+            SyncClient().raw_resp.headers['X-Weave-Records'] = '1'
+
+            self.app.get(self.collection_url,
+                         params={'_since': '14377478425700',
+                                 '_sort': 'newest'},
+                         headers=headers, status=200)
+
+    def test_collection_handle_limit_and_token_parameters(self):
+        headers = self.headers.copy()
+        headers.update({
+            AUTHORIZATION_HEADER: "BrowserID abcd",
+            CLIENT_STATE_HEADER: "1234",
+            'Origin': 'http://localhost:8000'
+        })
+
+        with mock.patch("syncto.views.collection.SyncClient") as SyncClient:
+            SyncClient.return_value._authenticate.return_value = None
+            SyncClient.return_value.get_records.return_value = [{
+                "id": "Y_-5-LEeQBuh60IT0MyWEQ",
+                "modified": 14377478425.69
+            }]
+            SyncClient().raw_resp.headers = {}
+            SyncClient().raw_resp.headers['X-Last-Modified'] = '14377478425.69'
+            SyncClient().raw_resp.headers['X-Weave-Records'] = '1'
+
+            self.app.get(self.collection_url,
+                         params={'_limit': '2', '_token': '12345',
+                                 '_sort': 'index'},
+                         headers=headers, status=200)
+
+    def test_collection_raises_with_invalid_sort_parameter(self):
+        headers = self.headers.copy()
+        headers.update({
+            AUTHORIZATION_HEADER: "BrowserID abcd",
+            CLIENT_STATE_HEADER: "1234",
+            'Origin': 'http://localhost:8000'
+        })
+
+        with mock.patch("syncto.views.collection.SyncClient") as SyncClient:
+            SyncClient.return_value._authenticate.return_value = None
+            SyncClient.return_value.get_records.return_value = [{
+                "id": "Y_-5-LEeQBuh60IT0MyWEQ",
+                "modified": 14377478425.69
+            }]
+            SyncClient().raw_resp.headers = {}
+            SyncClient().raw_resp.headers['X-Last-Modified'] = '14377478425.69'
+            SyncClient().raw_resp.headers['X-Weave-Records'] = '1'
+
+            resp = self.app.get(self.collection_url,
+                                params={'_sort': 'unknown'},
+                                headers=headers, status=400)
+
+            self.assertFormattedError(
+                resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
+                "_sort should be one of ('-last_modified', 'newest', "
+                "'-sortindex', 'index')")
+
+    def test_collection_can_validate_a_list_of_specified_ids(self):
+        headers = self.headers.copy()
+        headers.update({
+            AUTHORIZATION_HEADER: "BrowserID abcd",
+            CLIENT_STATE_HEADER: "1234",
+            'Origin': 'http://localhost:8000'
+        })
+
+        with mock.patch("syncto.views.collection.SyncClient") as SyncClient:
+            SyncClient.return_value._authenticate.return_value = None
+            SyncClient.return_value.get_records.return_value = [{
+                "id": "Y_-5-LEeQBuh60IT0MyWEQ",
+                "modified": 14377478425.69
+            }]
+            SyncClient().raw_resp.headers = {}
+            SyncClient().raw_resp.headers['X-Last-Modified'] = '14377478425.69'
+            SyncClient().raw_resp.headers['X-Weave-Records'] = '1'
+
+            resp = self.app.get(self.collection_url,
+                                params={'ids': '123,456,789'},
+                                headers=headers, status=400)
+
+            self.assertFormattedError(
+                resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
+                "Invalid id in ids list.")
