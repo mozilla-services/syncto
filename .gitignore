@@ -5,5 +5,5 @@
 .venv/
 .coverage
 .tox/
-loadtests/.env.install
 docs/_build/
+.cache/

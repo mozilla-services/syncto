@@ -31,7 +31,7 @@ ENTRY_POINTS = {
     ]}
 
 DEPENDENCY_LINKS = [
-    "https://github.com/mozilla-services/syncclient/tarball/use_with_syncto"
+    "https://github.com/mozilla-services/syncclient/tarball/master"
     "#egg=fxsync-client-0.0.1"
 ]
 
