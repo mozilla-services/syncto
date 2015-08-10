@@ -27,29 +27,34 @@ def base64url_encode(input, encoding='utf-8'):
 
 
 def bytes_to_uuid4(bytes_array):
+    # If we have more that 14 bytes it means that we should provide a
+    # valid uuid4
     if len(bytes_array) > 14:
-        uuid = text_type(UUID(hexlify(bytes_array)))
+        uuid = text_type(UUID(hexlify(bytes_array).decode('utf-8')))
         if UUID4_VALIDATOR.match(uuid) is None:
             raise ValueError('Your bytes array cannot be '
                              'converted into an UUID4.')
         else:
-            bytes_array = bytes_array.ljust(16, '\x00')
+            bytes_array = bytes_array.ljust(16, b'\x00')
+    # If we have less than 14 bytes, we can add two bytes that will
+    # fake a valid UUID4
     else:
-        bytes_array = bytes_array.ljust(14, '\x00')
-        bytes_array = '%s\x40%s\x80%s' % (bytes_array[:6],
-                                          bytes_array[6:7],
-                                          bytes_array[7:14])
+        bytes_array = bytes_array.ljust(14, b'\x00')
+        bytes_array = (bytes_array[:6] +
+                       b'\x40' + bytes_array[6:7] +
+                       b'\x80' + bytes_array[7:14])
 
-    return text_type(UUID(hexlify(bytes_array)))
+    return text_type(UUID(hexlify(bytes_array).decode('utf-8')))
 
 
 def uuid4_to_bytes(uuid4):
     bytes_array = UUID(uuid4).bytes
-    if bytes_array[6] == '\x40' and bytes_array[8] == '\x80':
-        bytes_array = '%s%s%s' % (bytes_array[:6],
-                                  bytes_array[7:8],
-                                  bytes_array[9:16])
-    return bytes_array.rstrip('\x00').ljust(9, '\x00')
+    if (bytes_array[6] in (b'\x40', ord(b'\x40')) and
+            bytes_array[8] in (b'\x80', ord(b'\x80'))):
+        bytes_array = b''.join((bytes_array[:6],
+                                bytes_array[7:8],
+                                bytes_array[9:16]))
+    return bytes_array.rstrip(b'\x00').ljust(9, b'\x00')
 
 
 def base64_to_uuid4(base64_id):

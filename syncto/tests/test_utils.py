@@ -16,10 +16,10 @@ def generate_random_uuid4():
 
 
 def generate_made_up_uuid4():
-    uuid_bytes = list(uuid4().bytes)
-    uuid_bytes[6] = binary_type('\x40')
-    uuid_bytes[8] = binary_type('\x80')
-    uuid = UUID(hexlify(binary_type(''.join(uuid_bytes))))
+    uuid_bytes = bytearray(uuid4().bytes)
+    uuid_bytes[6] = ord(b'\x40')
+    uuid_bytes[8] = ord(b'\x80')
+    uuid = UUID(hexlify(uuid_bytes).decode('utf-8'))
     return text_type(uuid)
 
 
@@ -34,17 +34,16 @@ class Bytes2UUID4Test(unittest.TestCase):
 
     def test_bytes_are_valids_uuid4(self):
         valid = UUID4_VALIDATOR.match(bytes_to_uuid4(os.urandom(14)))
-        if valid is None:
-            self.fail("14 random bytes should make a valid UUID4")
+        assert valid, "14 random bytes should make a valid UUID4"
 
 
 class UUID4ToBytesTest(unittest.TestCase):
     def test_a_basic_uuid4_returns_14_bytes(self):
         uuid = generate_made_up_uuid4()
         uuid_bytes = uuid4_to_bytes(uuid)
-        if len(uuid_bytes) > 14:
-            self.fail("A made uuid4 should return 14 bytes of data. "
-                      "Returned %s" % len(uuid_bytes))
+        assert len(uuid_bytes) <= 14, (
+            "A made uuid4 should return 14 bytes of data. "
+            "Returned %s" % len(uuid_bytes))
 
     def test_a_random_uuid4_returns_16_bytes(self):
         uuid = generate_random_uuid4()

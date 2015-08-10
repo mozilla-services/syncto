@@ -69,6 +69,28 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             'Origin': 'http://localhost:8000'
         })
 
+        with mock.patch("syncto.views.collection.SyncClient") as SyncClient:
+            SyncClient.return_value._authenticate.return_value = None
+            SyncClient.return_value.get_record.return_value = {
+                "id": "Y_-5-LEeQBuh60IT0MyWEQ",
+                "modified": 14377478425.69
+            }
+            SyncClient().raw_resp.headers = {}
+            SyncClient().raw_resp.headers['X-Last-Modified'] = '14377478425.69'
+            SyncClient().raw_resp.headers['X-Weave-Records'] = '1'
+
+            resp = self.app.get(self.collection_url,
+                                headers=headers, status=200)
+            self.assertIn('Access-Control-Allow-Origin', resp.headers)
+
+    def test_record_handle_cors_headers(self):
+        headers = self.headers.copy()
+        headers.update({
+            AUTHORIZATION_HEADER: "BrowserID abcd",
+            CLIENT_STATE_HEADER: "1234",
+            'Origin': 'http://localhost:8000'
+        })
+
         with mock.patch("syncto.views.record.SyncClient") as SyncClient:
             SyncClient.return_value._authenticate.return_value = None
             SyncClient.return_value.get_record.return_value = {
