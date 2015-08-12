@@ -1,16 +1,14 @@
-from pyramid import httpexceptions
-from pyramid.security import NO_PERMISSION_REQUIRED, forget
+from pyramid.security import NO_PERMISSION_REQUIRED
 
 from cliquet import Service
-from cliquet.errors import http_error, ERRORS, raise_invalid
-from sync.client import SyncClient
+from cliquet.errors import raise_invalid
 
-from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
+from syncto.authentication import build_sync_client
 from syncto.utils import base64_to_uuid4, uuid4_to_base64
 
 
 collection = Service(name='collection',
-                     description='Get the Firefox Sync Collection',
+                     description='Firefox Sync Collection service',
                      path=('/buckets/syncto/collections'
                            '/{collection_name}/records'),
                      cors_headers=('Next-Page', 'Total-Records',
@@ -20,33 +18,7 @@ collection = Service(name='collection',
 @collection.get(permission=NO_PERMISSION_REQUIRED)
 def collection_get(request):
     collection_name = request.matchdict['collection_name']
-    # Get the BID assertion
-    if AUTHORIZATION_HEADER not in request.headers or \
-       not request.headers[AUTHORIZATION_HEADER].lower() \
-                                                .startswith("browserid"):
-        error_msg = "Provide a BID assertion %s header." % (
-            AUTHORIZATION_HEADER)
-        response = http_error(httpexceptions.HTTPUnauthorized(),
-                              errno=ERRORS.MISSING_AUTH_TOKEN,
-                              message=error_msg)
-        response.headers.extend(forget(request))
-        return response
-
-    if CLIENT_STATE_HEADER not in request.headers:
-        error_msg = "Provide the tokenserver %s header." % (
-            CLIENT_STATE_HEADER
-        )
-        response = http_error(httpexceptions.HTTPUnauthorized(),
-                              errno=ERRORS.MISSING_AUTH_TOKEN,
-                              message=error_msg)
-        response.headers.extend(forget(request))
-        return response
-
-    authorization_header = request.headers[AUTHORIZATION_HEADER]
-
-    bid_assertion = authorization_header.split(" ", 1)[1]
-    client_state = request.headers[CLIENT_STATE_HEADER]
-    sync_client = SyncClient(bid_assertion, client_state)
+    sync_client = build_sync_client(request)
 
     params = {}
     if '_since' in request.GET:
