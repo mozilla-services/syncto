@@ -14,7 +14,6 @@ class BuildSyncClientTest(unittest.TestCase):
         self.request = DummyRequest()
 
     def test_should_raise_if_authorization_header_is_missing(self):
-        self.request.headers = {}
         self.assertRaises(HTTPUnauthorized, build_sync_client, self.request)
 
     def test_should_raise_if_client_state_header_is_missing(self):

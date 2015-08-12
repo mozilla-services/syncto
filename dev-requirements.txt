@@ -3,8 +3,7 @@ mock
 Sphinx
 sphinx_rtd_theme
 requests
-pytest
-pytest-cache
-pytest-cover
-pytest-sugar
+nose
+nose-cov
+nose-mocha-reporter
 https://github.com/mozilla-services/cliquet/archive/master.zip
