@@ -3,6 +3,7 @@ from pyramid.security import NO_PERMISSION_REQUIRED
 from cliquet import Service
 
 from syncto.authentication import build_sync_client
+from syncto.headers import handle_headers_conversion
 from syncto.utils import base64_to_uuid4, uuid4_to_base64
 
 
@@ -26,11 +27,6 @@ def record_get(request):
     record['id'] = base64_to_uuid4(record.pop('id'))
 
     # Configure headers
-    response_headers = sync_client.raw_resp.headers
-    headers = request.response.headers
-
-    last_modified = float(response_headers['X-Last-Modified'])
-    headers['ETag'] = '"%s"' % int(last_modified * 1000)
-    request.response.last_modified = last_modified
+    handle_headers_conversion(sync_client.raw_resp, request.response)
 
     return {'data': record}

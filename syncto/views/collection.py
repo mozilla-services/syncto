@@ -4,6 +4,7 @@ from cliquet import Service
 from cliquet.errors import raise_invalid
 
 from syncto.authentication import build_sync_client
+from syncto.headers import handle_headers_conversion
 from syncto.utils import base64_to_uuid4, uuid4_to_base64
 
 
@@ -63,17 +64,6 @@ def collection_get(request):
         r['id'] = base64_to_uuid4(r.pop('id'))
 
     # Configure headers
-    response_headers = sync_client.raw_resp.headers
-    headers = request.response.headers
-
-    last_modified = float(response_headers['X-Last-Modified'])
-    headers['ETag'] = '"%s"' % int(last_modified * 1000)
-    request.response.last_modified = last_modified
-
-    if 'X-Weave-Next-Offset' in response_headers:
-        headers['Next-Page'] = response_headers['X-Weave-Next-Offset']
-
-    if 'X-Weave-Records':
-        headers['Total-Records'] = response_headers['X-Weave-Records']
+    handle_headers_conversion(sync_client.raw_resp, request.response)
 
     return {'data': records}
