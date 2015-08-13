@@ -39,12 +39,12 @@ def collection_get(request):
             params['sort'] = 'index'
 
         else:
+            error_msg = ("_sort should be one of ('-last_modified', 'newest', "
+                         "'-sortindex', 'index')")
             raise_invalid(request,
                           location="querystring",
                           name="_sort",
-                          description=("_sort should be one of ("
-                                       "'-last_modified', 'newest', "
-                                       "'-sortindex', 'index')"))
+                          description=error_msg)
 
     if 'ids' in request.GET:
         try:
@@ -55,7 +55,7 @@ def collection_get(request):
             raise_invalid(request,
                           location="querystring",
                           name="ids",
-                          description=("Invalid id in ids list."))
+                          description="Invalid id in ids list.")
 
     records = sync_client.get_records(collection_name, full=True, **params)
 

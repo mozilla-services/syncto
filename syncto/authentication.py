@@ -9,9 +9,13 @@ from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 
 def build_sync_client(request):
     # Get the BID assertion
-    if AUTHORIZATION_HEADER not in request.headers or \
-       not request.headers[AUTHORIZATION_HEADER].lower() \
-                                                .startswith("browserid"):
+    is_authorization_defined = AUTHORIZATION_HEADER in request.headers
+    starts_with_browser_id = False
+    if is_authorization_defined:
+        authorization = request.headers[AUTHORIZATION_HEADER].lower()
+        starts_with_browser_id = authorization.startswith("browserid")
+
+    if not is_authorization_defined or not starts_with_browser_id:
         error_msg = "Provide a BID assertion %s header." % (
             AUTHORIZATION_HEADER)
         response = http_error(httpexceptions.HTTPUnauthorized(),
@@ -20,10 +24,10 @@ def build_sync_client(request):
         response.headers.extend(forget(request))
         raise response
 
-    if CLIENT_STATE_HEADER not in request.headers:
+    is_client_state_defined = CLIENT_STATE_HEADER in request.headers
+    if not is_client_state_defined:
         error_msg = "Provide the tokenserver %s header." % (
-            CLIENT_STATE_HEADER
-        )
+            CLIENT_STATE_HEADER)
         response = http_error(httpexceptions.HTTPUnauthorized(),
                               errno=ERRORS.MISSING_AUTH_TOKEN,
                               message=error_msg)
