@@ -169,13 +169,9 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             "'-sortindex', 'index')")
 
     def test_collection_can_validate_a_list_of_specified_ids(self):
-        resp = self.app.get(COLLECTION_URL,
-                            params={'ids': '123,456,789'},
-                            headers=self.headers, status=400)
-
-        self.assertFormattedError(
-            resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
-            "Invalid id in ids list.")
+        self.app.get(COLLECTION_URL,
+                     params={'ids': '123,456,789'},
+                     headers=self.headers, status=200)
 
     def test_collection_correctly_converts_sync_headers(self):
         resp = self.app.get(COLLECTION_URL,
