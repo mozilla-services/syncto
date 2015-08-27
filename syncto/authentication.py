@@ -1,5 +1,6 @@
 from pyramid import httpexceptions
 from pyramid.security import forget
+from requests.exceptions import HTTPError
 
 from cliquet.errors import http_error, ERRORS
 from sync.client import SyncClient
@@ -38,5 +39,14 @@ def build_sync_client(request):
 
     bid_assertion = authorization_header.split(" ", 1)[1]
     client_state = request.headers[CLIENT_STATE_HEADER]
-    sync_client = SyncClient(bid_assertion, client_state)
+    try:
+        sync_client = SyncClient(bid_assertion, client_state)
+    except HTTPError as e:
+        response = http_error(httpexceptions.HTTPUnauthorized(),
+                              errno=ERRORS.INVALID_AUTH_TOKEN,
+                              message='%s %s: %s' % (e.response.status_code,
+                                                     e.response.reason,
+                                                     e.response.text))
+        response.headers.extend(forget(request))
+        raise response
     return sync_client

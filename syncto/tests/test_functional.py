@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from cliquet.errors import ERRORS
 from cliquet.tests.support import FormattedErrorMixin
-
+from requests.exceptions import HTTPError
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 
 from .support import BaseWebTest, unittest
@@ -58,6 +58,27 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
                                 status=404)
         self.assertEqual(response.headers['Access-Control-Allow-Origin'],
                          'notmyidea.org')
+
+    def test_client_state_header_with_non_sense_raise_401(self):
+        headers = self.headers.copy()
+        headers['Authorization'] = "BrowserID abcd"
+        headers['X-Client-State'] = "NonSense"
+        patch = mock.patch("syncto.authentication.SyncClient")
+        with patch as sync_client:
+            error = HTTPError()
+            error.response = mock.MagicMock()
+            error.response.status_code = 401
+            error.response.reason = "Unauthorized"
+            error.response.text = ('{"status": "invalid-credentials", '
+                                   '"errors": [{"location": "body", '
+                                   '"name": "", '
+                                   '"description": "Unauthorized"}]}')
+            sync_client.side_effect = error
+            resp = self.app.get(COLLECTION_URL, headers=headers, status=401)
+
+        self.assertFormattedError(
+            resp, 401, ERRORS.INVALID_AUTH_TOKEN, "Unauthorized",
+            '401 Unauthorized: {"status": "invalid-credentials"')
 
 
 class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
