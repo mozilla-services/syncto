@@ -184,3 +184,7 @@ class RecordTest(BaseWebTest, unittest.TestCase):
     def test_record_handle_cors_headers(self):
         resp = self.app.get(RECORD_URL, headers=self.headers, status=200)
         self.assertIn('Access-Control-Allow-Origin', resp.headers)
+
+    def test_can_delete_record(self):
+        self.sync_client.return_value.delete_record.return_value = None
+        self.app.delete(RECORD_URL, headers=self.headers, status=204)
