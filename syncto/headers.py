@@ -10,5 +10,5 @@ def convert_headers(sync_raw_response, syncto_response):
     if 'X-Weave-Next-Offset' in response_headers:
         headers['Next-Page'] = str(response_headers['X-Weave-Next-Offset'])
 
-    if 'X-Weave-Records':
+    if 'X-Weave-Records' in response_headers:
         headers['Total-Records'] = str(response_headers['X-Weave-Records'])
