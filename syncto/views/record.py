@@ -1,5 +1,6 @@
 import re
 
+import colander
 from cliquet import Service, schema
 from pyramid.security import NO_PERMISSION_REQUIRED
 
@@ -14,6 +15,14 @@ SYNC_ID_FORMAT = re.compile(r'^[a-zA-Z0-9_-]{12}$')  # 9 bytes URL safe base64
 class RecordSchema(schema.ResourceSchema):
     class Options():
         preserve_unknown = True
+
+
+class PayloadSchema(colander.MappingSchema):
+    data = RecordSchema()
+
+    def schema_type(self, **kw):
+        return colander.Mapping(unknown='raise')
+
 
 record = Service(name='record',
                  description='Firefox Sync Collection Record service',
@@ -40,7 +49,7 @@ def record_get(request):
     return {'data': record}
 
 
-@record.put(permission=NO_PERMISSION_REQUIRED, schema=RecordSchema)
+@record.put(permission=NO_PERMISSION_REQUIRED, schema=PayloadSchema)
 def record_put(request):
     collection_name = request.matchdict['collection_name']
     record_id = request.matchdict['record_id']
@@ -54,7 +63,6 @@ def record_put(request):
     sync_client = build_sync_client(request)
     last_modified = sync_client.put_record(collection_name, record,
                                            if_unmodified_since)
-
     record['last_modified'] = int(last_modified * 1000)
     record['id'] = record_id
 

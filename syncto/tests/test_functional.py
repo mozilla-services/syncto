@@ -178,6 +178,7 @@ class RecordTest(BaseWebTest, unittest.TestCase):
             "id": "Y_-5-LEeQBuh60IT0MyWEQ",
             "modified": 14377478425.69
         }
+        self.sync_client.return_value.put_record.return_value = 14377478425.69
 
         self.addCleanup(p.stop)
 
@@ -216,3 +217,16 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.sync_client.return_value.delete_record.side_effect = HTTPError(
             response=response)
         self.app.delete(RECORD_URL, headers=self.headers, status=404)
+
+    def test_can_put_valid_record(self):
+        record = {
+            "data": {
+                "payload": "abcd"
+            }
+        }
+        self.app.put_json(RECORD_URL, record, headers=self.headers, status=200)
+
+    def test_put_record_reject_invalid_record(self):
+        invalid = {"payload": "foobar"}
+        self.app.put_json(RECORD_URL, invalid, headers=self.headers,
+                          status=400)
