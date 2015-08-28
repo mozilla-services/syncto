@@ -3,6 +3,7 @@ from pyramid.security import forget
 from requests.exceptions import HTTPError
 
 from cliquet.errors import http_error, ERRORS
+from cliquet.views.errors import service_unavailable
 from sync.client import SyncClient
 
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
@@ -42,11 +43,15 @@ def build_sync_client(request):
     try:
         sync_client = SyncClient(bid_assertion, client_state)
     except HTTPError as e:
-        response = http_error(httpexceptions.HTTPUnauthorized(),
-                              errno=ERRORS.INVALID_AUTH_TOKEN,
-                              message='%s %s: %s' % (e.response.status_code,
-                                                     e.response.reason,
-                                                     e.response.text))
-        response.headers.extend(forget(request))
-        raise response
+        if e.response.status_code in (400, 401):
+            response = http_error(httpexceptions.HTTPUnauthorized(),
+                                  errno=ERRORS.INVALID_AUTH_TOKEN,
+                                  message='%s %s: %s' % (
+                                      e.response.status_code,
+                                      e.response.reason,
+                                      e.response.text))
+            response.headers.extend(forget(request))
+            raise response
+        else:
+            raise service_unavailable(e, request)
     return sync_client

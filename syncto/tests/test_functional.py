@@ -80,6 +80,23 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             resp, 401, ERRORS.INVALID_AUTH_TOKEN, "Unauthorized",
             '401 Unauthorized: {"status": "invalid-credentials"')
 
+    def test_error_with_syncclient_server_raise_a_503(self):
+        headers = self.headers.copy()
+        headers['Authorization'] = "BrowserID abcd"
+        headers['X-Client-State'] = "NonSense"
+        patch = mock.patch("syncto.authentication.SyncClient")
+        with patch as sync_client:
+            error = HTTPError()
+            error.response = mock.MagicMock()
+            error.response.status_code = 503
+            error.response.reason = "Service Unavailable"
+            sync_client.side_effect = error
+            resp = self.app.get(COLLECTION_URL, headers=headers, status=503)
+
+        self.assertFormattedError(
+            resp, 503, ERRORS.BACKEND, "Service Unavailable",
+            "Service unavailable due to high load, please retry later.")
+
 
 class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
