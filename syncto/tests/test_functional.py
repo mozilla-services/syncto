@@ -1,4 +1,5 @@
 import mock
+from contextlib import contextmanager
 from uuid import uuid4
 
 from cliquet.errors import ERRORS
@@ -59,21 +60,27 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
         self.assertEqual(response.headers['Access-Control-Allow-Origin'],
                          'notmyidea.org')
 
-    def test_client_state_header_with_non_sense_raise_401(self):
+    @contextmanager
+    def patched_client(self, path, status=401, reason="Unauthorized"):
+        error = HTTPError()
+        error.response = mock.MagicMock()
+        error.response.status_code = status
+        error.response.reason = reason
+        error.response.text = ('{"status": "invalid-credentials", '
+                               '"errors": [{"location": "body", '
+                               '"name": "", '
+                               '"description": "Unauthorized"}]}')
+        patch = mock.patch(path, side_effect=error)
+        try:
+            yield patch.start()
+        finally:
+            patch.stop()
+
+    def test_bad_client_state_header_raise_a_401(self):
         headers = self.headers.copy()
-        headers['Authorization'] = "BrowserID abcd"
+        headers['Authorization'] = "BrowserID valid-browser-id-assertion"
         headers['X-Client-State'] = "NonSense"
-        patch = mock.patch("syncto.authentication.SyncClient")
-        with patch as sync_client:
-            error = HTTPError()
-            error.response = mock.MagicMock()
-            error.response.status_code = 401
-            error.response.reason = "Unauthorized"
-            error.response.text = ('{"status": "invalid-credentials", '
-                                   '"errors": [{"location": "body", '
-                                   '"name": "", '
-                                   '"description": "Unauthorized"}]}')
-            sync_client.side_effect = error
+        with self.patched_client("syncto.authentication.SyncClient"):
             resp = self.app.get(COLLECTION_URL, headers=headers, status=401)
 
         self.assertFormattedError(
@@ -82,20 +89,14 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
     def test_error_with_syncclient_server_raise_a_503(self):
         headers = self.headers.copy()
-        headers['Authorization'] = "BrowserID abcd"
-        headers['X-Client-State'] = "NonSense"
-        patch = mock.patch("syncto.authentication.SyncClient")
-        with patch as sync_client:
-            error = HTTPError()
-            error.response = mock.MagicMock()
-            error.response.status_code = 503
-            error.response.reason = "Service Unavailable"
-            sync_client.side_effect = error
+        headers['Authorization'] = "BrowserID valid-browser-id-assertion"
+        headers['X-Client-State'] = "ValidClientState"
+        with self.patched_client("syncto.authentication.SyncClient",
+                                 503, "Service Unavailable"):
             resp = self.app.get(COLLECTION_URL, headers=headers, status=503)
 
         self.assertFormattedError(
-            resp, 503, ERRORS.BACKEND, "Service Unavailable",
-            "Service unavailable due to high load, please retry later.")
+            resp, 503, ERRORS.BACKEND, "Service Unavailable", "retry later")
 
 
 class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):

@@ -44,12 +44,13 @@ def build_sync_client(request):
         sync_client = SyncClient(bid_assertion, client_state)
     except HTTPError as e:
         if e.response.status_code in (400, 401):
+            message = '%s %s: %s' % (e.response.status_code,
+                                     e.response.reason,
+                                     e.response.text)
             response = http_error(httpexceptions.HTTPUnauthorized(),
                                   errno=ERRORS.INVALID_AUTH_TOKEN,
-                                  message='%s %s: %s' % (
-                                      e.response.status_code,
-                                      e.response.reason,
-                                      e.response.text))
+                                  message=message)
+            # Forget the current user credentials.
             response.headers.extend(forget(request))
             raise response
         else:
