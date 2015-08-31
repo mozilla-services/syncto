@@ -1,9 +1,10 @@
 import mock
+from contextlib import contextmanager
 from uuid import uuid4
 
 from cliquet.errors import ERRORS
 from cliquet.tests.support import FormattedErrorMixin
-
+from requests.exceptions import HTTPError
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 
 from .support import BaseWebTest, unittest
@@ -58,6 +59,44 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
                                 status=404)
         self.assertEqual(response.headers['Access-Control-Allow-Origin'],
                          'notmyidea.org')
+
+    @contextmanager
+    def patched_client(self, path, status=401, reason="Unauthorized"):
+        error = HTTPError()
+        error.response = mock.MagicMock()
+        error.response.status_code = status
+        error.response.reason = reason
+        error.response.text = ('{"status": "invalid-credentials", '
+                               '"errors": [{"location": "body", '
+                               '"name": "", '
+                               '"description": "Unauthorized"}]}')
+        patch = mock.patch(path, side_effect=error)
+        try:
+            yield patch.start()
+        finally:
+            patch.stop()
+
+    def test_bad_client_state_header_raise_a_401(self):
+        headers = self.headers.copy()
+        headers['Authorization'] = "BrowserID valid-browser-id-assertion"
+        headers['X-Client-State'] = "NonSense"
+        with self.patched_client("syncto.authentication.SyncClient"):
+            resp = self.app.get(COLLECTION_URL, headers=headers, status=401)
+
+        self.assertFormattedError(
+            resp, 401, ERRORS.INVALID_AUTH_TOKEN, "Unauthorized",
+            '401 Unauthorized: {"status": "invalid-credentials"')
+
+    def test_error_with_syncclient_server_raise_a_503(self):
+        headers = self.headers.copy()
+        headers['Authorization'] = "BrowserID valid-browser-id-assertion"
+        headers['X-Client-State'] = "ValidClientState"
+        with self.patched_client("syncto.authentication.SyncClient",
+                                 503, "Service Unavailable"):
+            resp = self.app.get(COLLECTION_URL, headers=headers, status=503)
+
+        self.assertFormattedError(
+            resp, 503, ERRORS.BACKEND, "Service Unavailable", "retry later")
 
 
 class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
