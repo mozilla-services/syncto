@@ -50,6 +50,15 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             resp, 401, ERRORS.MISSING_AUTH_TOKEN, "Unauthorized",
             "Provide the tokenserver %s header." % CLIENT_STATE_HEADER)
 
+    def test_404_endpoint_returns_cors_headers(self):
+        headers = self.headers.copy()
+        headers['Origin'] = 'notmyidea.org'
+        response = self.app.get('/unknown',
+                                headers=headers,
+                                status=404)
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'],
+                         'notmyidea.org')
+
 
 class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
