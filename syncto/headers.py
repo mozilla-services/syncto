@@ -1,4 +1,5 @@
-def handle_headers_conversion(sync_raw_response, syncto_response):
+def convert_headers(sync_raw_response, syncto_response):
+    """Convert Sync headers to Kinto compatible ones."""
     response_headers = sync_raw_response.headers
     headers = syncto_response.headers
 
