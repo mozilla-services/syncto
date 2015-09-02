@@ -1,5 +1,5 @@
 import os
-import unittest
+from .support import unittest
 
 from binascii import hexlify
 from six import text_type, binary_type
