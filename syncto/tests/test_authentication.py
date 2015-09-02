@@ -1,5 +1,5 @@
 import mock
-import unittest
+from .support import unittest
 
 from pyramid.httpexceptions import HTTPUnauthorized
 from cliquet.tests.support import DummyRequest
