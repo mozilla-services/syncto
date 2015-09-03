@@ -184,3 +184,35 @@ class RecordTest(BaseWebTest, unittest.TestCase):
     def test_record_handle_cors_headers(self):
         resp = self.app.get(RECORD_URL, headers=self.headers, status=200)
         self.assertIn('Access-Control-Allow-Origin', resp.headers)
+
+    def test_can_delete_record(self):
+        self.sync_client.return_value.delete_record.return_value = None
+        self.app.delete(RECORD_URL, headers=self.headers, status=204)
+
+    def test_delete_return_a_503_in_case_of_unknown_error(self):
+        response = mock.MagicMock()
+        response.status_code = 500
+        self.sync_client.return_value.delete_record.side_effect = HTTPError(
+            response=response)
+        self.app.delete(RECORD_URL, headers=self.headers, status=503)
+
+    def test_delete_return_a_400_in_case_of_bad_request(self):
+        response = mock.MagicMock()
+        response.status_code = 400
+        self.sync_client.return_value.delete_record.side_effect = HTTPError(
+            response=response)
+        self.app.delete(RECORD_URL, headers=self.headers, status=400)
+
+    def test_delete_return_a_403_in_case_of_forbidden_resource(self):
+        response = mock.MagicMock()
+        response.status_code = 403
+        self.sync_client.return_value.delete_record.side_effect = HTTPError(
+            response=response)
+        self.app.delete(RECORD_URL, headers=self.headers, status=403)
+
+    def test_delete_return_a_404_in_case_of_unknown_resource(self):
+        response = mock.MagicMock()
+        response.status_code = 404
+        self.sync_client.return_value.delete_record.side_effect = HTTPError(
+            response=response)
+        self.app.delete(RECORD_URL, headers=self.headers, status=404)
