@@ -188,3 +188,10 @@ class RecordTest(BaseWebTest, unittest.TestCase):
     def test_can_delete_record(self):
         self.sync_client.return_value.delete_record.return_value = None
         self.app.delete(RECORD_URL, headers=self.headers, status=204)
+
+    def test_delete_return_a_503_in_case_of_error(self):
+        response = mock.MagicMock()
+        response.status_code = 500
+        self.sync_client.return_value.delete_record.side_effect = HTTPError(
+            response=response)
+        self.app.delete(RECORD_URL, headers=self.headers, status=503)
