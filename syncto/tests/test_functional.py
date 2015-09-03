@@ -162,6 +162,14 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
             "Invalid id in ids list.")
 
+    def test_collection_correctly_convert_sync_headers(self):
+        resp = self.app.get(COLLECTION_URL,
+                            headers=self.headers, status=200)
+        self.assertIn('Total-Records', resp.headers)
+        self.assertIn('Next-Page', resp.headers)
+        self.assertEquals(resp.headers['Total-Records'], '1')
+        self.assertEquals(resp.headers['Next-Page'], '12345')
+
 
 class RecordTest(BaseWebTest, unittest.TestCase):
 
