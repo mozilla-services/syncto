@@ -195,3 +195,10 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.sync_client.return_value.delete_record.side_effect = HTTPError(
             response=response)
         self.app.delete(RECORD_URL, headers=self.headers, status=503)
+
+    def test_delete_return_a_404_in_case_of_unknown_ressource(self):
+        response = mock.MagicMock()
+        response.status_code = 404
+        self.sync_client.return_value.delete_record.side_effect = HTTPError(
+            response=response)
+        self.app.delete(RECORD_URL, headers=self.headers, status=404)

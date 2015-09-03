@@ -14,15 +14,23 @@ def error(context, request):
     """Catch server errors and trace them."""
     logger.error(context, exc_info=True)
 
-    if context.response.status_code in (400, 401):
-            message = '%s %s: %s' % (context.response.status_code,
-                                     context.response.reason,
-                                     context.response.text)
-            response = http_error(httpexceptions.HTTPUnauthorized(),
-                                  errno=ERRORS.INVALID_AUTH_TOKEN,
-                                  message=message)
-            # Forget the current user credentials.
-            response.headers.extend(forget(request))
+    message = '%s %s: %s' % (context.response.status_code,
+                             context.response.reason,
+                             context.response.text)
+    if context.response.status_code == 400:
+        response = http_error(httpexceptions.HTTPBadRequest(),
+                              errno=ERRORS.INVALID_PARAMETERS,
+                              message=message)
+    elif context.response.status_code == 401:
+        response = http_error(httpexceptions.HTTPUnauthorized(),
+                              errno=ERRORS.INVALID_AUTH_TOKEN,
+                              message=message)
+        # Forget the current user credentials.
+        response.headers.extend(forget(request))
+    elif context.response.status_code == 404:
+        response = http_error(httpexceptions.HTTPNotFound(),
+                              errno=ERRORS.INVALID_RESOURCE_ID,
+                              message=message)
     else:
         response = service_unavailable(context, request)
 
