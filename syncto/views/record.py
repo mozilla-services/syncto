@@ -42,4 +42,5 @@ def record_delete(request):
     sync_client.delete_record(collection_name, sync_id)
 
     request.response.status_code = 204
+    del request.response.headers['Content-Type']
     return request.response
