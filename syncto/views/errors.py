@@ -27,6 +27,10 @@ def error(context, request):
                               message=message)
         # Forget the current user credentials.
         response.headers.extend(forget(request))
+    elif context.response.status_code == 403:
+        response = http_error(httpexceptions.HTTPForbidden(),
+                              errno=ERRORS.FORBIDDEN,
+                              message=message)
     elif context.response.status_code == 404:
         response = http_error(httpexceptions.HTTPNotFound(),
                               errno=ERRORS.INVALID_RESOURCE_ID,
