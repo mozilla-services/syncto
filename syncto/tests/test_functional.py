@@ -189,23 +189,30 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.sync_client.return_value.delete_record.return_value = None
         self.app.delete(RECORD_URL, headers=self.headers, status=204)
 
-    def test_delete_return_a_503_in_case_of_error(self):
+    def test_delete_return_a_503_in_case_of_unknown_error(self):
         response = mock.MagicMock()
         response.status_code = 500
         self.sync_client.return_value.delete_record.side_effect = HTTPError(
             response=response)
         self.app.delete(RECORD_URL, headers=self.headers, status=503)
 
-    def test_delete_return_a_404_in_case_of_unknown_ressource(self):
+    def test_delete_return_a_400_in_case_of_bad_request(self):
         response = mock.MagicMock()
-        response.status_code = 404
+        response.status_code = 400
         self.sync_client.return_value.delete_record.side_effect = HTTPError(
             response=response)
-        self.app.delete(RECORD_URL, headers=self.headers, status=404)
+        self.app.delete(RECORD_URL, headers=self.headers, status=400)
 
-    def test_delete_return_a_403_in_case_of_forbidden_ressource(self):
+    def test_delete_return_a_403_in_case_of_forbidden_resource(self):
         response = mock.MagicMock()
         response.status_code = 403
         self.sync_client.return_value.delete_record.side_effect = HTTPError(
             response=response)
         self.app.delete(RECORD_URL, headers=self.headers, status=403)
+
+    def test_delete_return_a_404_in_case_of_unknown_resource(self):
+        response = mock.MagicMock()
+        response.status_code = 404
+        self.sync_client.return_value.delete_record.side_effect = HTTPError(
+            response=response)
+        self.app.delete(RECORD_URL, headers=self.headers, status=404)

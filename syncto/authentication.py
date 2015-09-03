@@ -2,7 +2,7 @@ from pyramid import httpexceptions
 from pyramid.security import forget
 
 from cliquet.errors import http_error, ERRORS
-from sync.client import SyncClient
+from syncclient.client import SyncClient
 
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 

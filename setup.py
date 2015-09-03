@@ -15,7 +15,7 @@ with open(os.path.join(here, 'CHANGELOG.rst')) as f:
 REQUIREMENTS = [
     'waitress',
     'cliquet[postgresql,monitoring]',
-    'fxsync-client>=0.0.1'
+    'syncclient'
 ]
 
 if PY2:
@@ -29,11 +29,6 @@ ENTRY_POINTS = {
     'paste.app_factory': [
         'main = syncto:main',
     ]}
-
-DEPENDENCY_LINKS = [
-    "https://github.com/mozilla-services/syncclient/tarball/master"
-    "#egg=fxsync-client-0.0.1"
-]
 
 setup(name='syncto',
       version='1.0.0.dev0',
@@ -54,5 +49,4 @@ setup(name='syncto',
       include_package_data=True,
       zip_safe=False,
       install_requires=REQUIREMENTS,
-      entry_points=ENTRY_POINTS,
-      dependency_links=DEPENDENCY_LINKS)
+      entry_points=ENTRY_POINTS)
