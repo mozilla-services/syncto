@@ -37,6 +37,7 @@ tests-once: install-dev
 	$(VENV)/bin/nosetests -s --with-mocha-reporter --cover-min-percentage=100 --with-coverage --cover-package=syncto
 
 tests:
+	@rm -fr .coverage
 	tox
 
 clean:

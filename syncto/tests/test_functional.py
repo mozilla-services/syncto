@@ -13,6 +13,12 @@ from .support import BaseWebTest, unittest
 COLLECTION_URL = "/buckets/syncto/collections/tabs/records"
 RECORD_URL = "/buckets/syncto/collections/tabs/records/%s" % uuid4()
 
+RECORD_EXAMPLE = {
+    "data": {
+        "payload": "abcd"
+    }
+}
+
 
 class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
@@ -162,6 +168,14 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
             "Invalid id in ids list.")
 
+    def test_collection_correctly_converts_sync_headers(self):
+        resp = self.app.get(COLLECTION_URL,
+                            headers=self.headers, status=200)
+        self.assertIn('Total-Records', resp.headers)
+        self.assertIn('Next-Page', resp.headers)
+        self.assertEquals(resp.headers['Total-Records'], '1')
+        self.assertEquals(resp.headers['Next-Page'], '12345')
+
 
 class RecordTest(BaseWebTest, unittest.TestCase):
 
@@ -178,6 +192,7 @@ class RecordTest(BaseWebTest, unittest.TestCase):
             "id": "Y_-5-LEeQBuh60IT0MyWEQ",
             "modified": 14377478425.69
         }
+        self.sync_client.return_value.put_record.return_value = 14377478425.69
 
         self.addCleanup(p.stop)
 
@@ -216,3 +231,44 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.sync_client.return_value.delete_record.side_effect = HTTPError(
             response=response)
         self.app.delete(RECORD_URL, headers=self.headers, status=404)
+
+    def test_can_put_valid_record(self):
+        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                          headers=self.headers, status=200)
+
+    def test_put_record_reject_invalid_record(self):
+        invalid = {"payload": "foobar"}
+        self.app.put_json(RECORD_URL, invalid, headers=self.headers,
+                          status=400)
+
+    def test_put_return_a_503_in_case_of_unknown_error(self):
+        response = mock.MagicMock()
+        response.status_code = 500
+        self.sync_client.return_value.put_record.side_effect = HTTPError(
+            response=response)
+        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                          headers=self.headers, status=503)
+
+    def test_put_return_a_400_in_case_of_bad_request(self):
+        response = mock.MagicMock()
+        response.status_code = 400
+        self.sync_client.return_value.put_record.side_effect = HTTPError(
+            response=response)
+        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                          headers=self.headers, status=400)
+
+    def test_put_return_a_403_in_case_of_forbidden_resource(self):
+        response = mock.MagicMock()
+        response.status_code = 403
+        self.sync_client.return_value.put_record.side_effect = HTTPError(
+            response=response)
+        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                          headers=self.headers, status=403)
+
+    def test_put_return_a_404_in_case_of_unknown_resource(self):
+        response = mock.MagicMock()
+        response.status_code = 404
+        self.sync_client.return_value.put_record.side_effect = HTTPError(
+            response=response)
+        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                          headers=self.headers, status=404)
