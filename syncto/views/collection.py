@@ -23,7 +23,14 @@ def collection_get(request):
 
     params = {}
     if '_since' in request.GET:
-        params['newer'] = request.GET['_since']
+        try:
+            params['newer'] = '%.2f' % (int(request.GET['_since']) / 1000.0)
+        except ValueError:
+            error_msg = ("_since should be a number.")
+            raise_invalid(request,
+                          location="querystring",
+                          name="_since",
+                          description=error_msg)
 
     if '_limit' in request.GET:
         params['limit'] = request.GET['_limit']

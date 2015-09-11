@@ -139,7 +139,16 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
                              '_sort': 'newest'},
                      headers=self.headers, status=200)
         self.sync_client.return_value.get_records.assert_called_with(
-            "tabs", full=True, newer='14377478425700', sort='newest')
+            "tabs", full=True, newer='14377478425.70', sort='newest')
+
+    def test_collection_raises_if_since_parameter_is_not_a_number(self):
+        resp = self.app.get(COLLECTION_URL,
+                            params={'_since': 'not-a-number'},
+                            headers=self.headers, status=400)
+
+        self.assertFormattedError(
+            resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
+            "_since should be a number.")
 
     def test_collection_handle_limit_and_token_parameters(self):
         self.app.get(COLLECTION_URL,
