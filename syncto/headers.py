@@ -12,3 +12,7 @@ def convert_headers(sync_raw_response, syncto_response):
 
     if 'X-Weave-Records' in response_headers:
         headers['Total-Records'] = str(response_headers['X-Weave-Records'])
+
+    if 'X-Weave-Quota-Remaining' in response_headers:
+        headers['Quota-Remaining'] = str(
+            response_headers['X-Weave-Quota-Remaining'])

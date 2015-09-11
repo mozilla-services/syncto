@@ -124,6 +124,7 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
         headers['X-Last-Modified'] = '14377478425.69'
         headers['X-Weave-Records'] = '1'
         headers['X-Weave-Next-Offset'] = '12345'
+        headers['X-Weave-Quota-Remaining'] = '125'
         self.sync_client.return_value.raw_resp.headers = headers
 
         self.addCleanup(p.stop)
@@ -178,8 +179,10 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
                             headers=self.headers, status=200)
         self.assertIn('Total-Records', resp.headers)
         self.assertIn('Next-Page', resp.headers)
+        self.assertIn('Quota-Remaining', resp.headers)
         self.assertEquals(resp.headers['Total-Records'], '1')
         self.assertEquals(resp.headers['Next-Page'], '12345')
+        self.assertEquals(resp.headers['Quota-Remaining'], '125')
 
 
 class RecordTest(BaseWebTest, unittest.TestCase):
