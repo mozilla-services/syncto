@@ -5,7 +5,6 @@ from cliquet.errors import raise_invalid
 
 from syncto.authentication import build_sync_client
 from syncto.headers import convert_headers
-from syncto.utils import base64_to_uuid4, uuid4_to_base64
 
 
 collection = Service(name='collection',
@@ -54,21 +53,13 @@ def collection_get(request):
                           description=error_msg)
 
     if 'ids' in request.GET:
-        try:
-            params['ids'] = [uuid4_to_base64(record_id.strip())
-                             for record_id in request.GET['ids'].split(',')
-                             if record_id]
-        except ValueError:
-            raise_invalid(request,
-                          location="querystring",
-                          name="ids",
-                          description="Invalid id in ids list.")
+        params['ids'] = [record_id.strip() for record_id in
+                         request.GET['ids'].split(',') if record_id]
 
     records = sync_client.get_records(collection_name, full=True, **params)
 
     for r in records:
         r['last_modified'] = int(r.pop('modified') * 1000)
-        r['id'] = base64_to_uuid4(r.pop('id'))
 
     # Configure headers
     convert_headers(sync_client.raw_resp, request.response)
