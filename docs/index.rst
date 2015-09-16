@@ -7,16 +7,8 @@ Table of content
 .. toctree::
    :maxdepth: 2
 
-   api/index
    installation
+   api/index
+   headers
    contributing
    changelog
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
