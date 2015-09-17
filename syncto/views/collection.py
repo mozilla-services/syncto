@@ -12,7 +12,7 @@ collection = Service(name='collection',
                      path=('/buckets/syncto/collections'
                            '/{collection_name}/records'),
                      cors_headers=('Next-Page', 'Total-Records',
-                                   'Last-Modified', 'ETag'))
+                                   'Last-Modified', 'ETag', 'Quota-Remaining'))
 
 
 @collection.get(permission=NO_PERMISSION_REQUIRED)
