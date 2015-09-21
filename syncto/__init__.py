@@ -17,10 +17,15 @@ else:
 AUTHORIZATION_HEADER = 'Authorization'
 CLIENT_STATE_HEADER = 'X-Client-State'
 
+DEFAULT_SETTINGS = {
+    'syncto.cache_hmac_secret': 'This is not a secret',
+    'syncto.cache_credentials_ttl_seconds': 300
+}
+
 
 def main(global_config, **settings):
     config = Configurator(settings=settings)
 
-    cliquet.initialize(config, __version__)
+    cliquet.initialize(config, __version__, default_settings=DEFAULT_SETTINGS)
     config.scan("syncto.views")
     return config.make_wsgi_app()
