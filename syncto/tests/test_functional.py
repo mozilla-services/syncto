@@ -97,7 +97,7 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
         headers = self.headers.copy()
         headers['Authorization'] = "BrowserID valid-browser-id-assertion"
         headers['X-Client-State'] = "ValidClientState"
-        with self.patched_client("syncto.authentication.SyncClient",
+        with self.patched_client("syncto.authentication.TokenserverClient",
                                  503, "Service Unavailable"):
             resp = self.app.get(COLLECTION_URL, headers=headers, status=503)
 
