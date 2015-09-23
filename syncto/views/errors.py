@@ -8,6 +8,8 @@ from cliquet.errors import http_error, ERRORS
 from cliquet.utils import reapply_cors
 from cliquet.views.errors import service_unavailable
 
+from syncto.headers import export_headers
+
 
 @view_config(context=HTTPError, permission=NO_PERMISSION_REQUIRED)
 def error(context, request):
@@ -37,5 +39,7 @@ def error(context, request):
                               message=message)
     else:
         response = service_unavailable(context, request)
+
+    export_headers(context.response, response)
 
     return reapply_cors(request, response)

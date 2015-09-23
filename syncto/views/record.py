@@ -5,7 +5,7 @@ from cliquet import Service, schema
 from pyramid.security import NO_PERMISSION_REQUIRED
 
 from syncto.authentication import build_sync_client
-from syncto.headers import convert_headers
+from syncto.headers import import_headers, export_headers
 
 
 SYNC_ID_FORMAT = re.compile(r'^[a-zA-Z0-9_-]{12}$')  # 9 bytes URL safe base64
@@ -36,12 +36,14 @@ def record_get(request):
     record_id = request.matchdict['record_id']
 
     sync_client = build_sync_client(request)
-    record = sync_client.get_record(collection_name, record_id)
+    headers = import_headers(request)
+    record = sync_client.get_record(collection_name, record_id,
+                                    headers=headers)
 
     record['last_modified'] = int(record.pop('modified') * 1000)
 
     # Configure headers
-    convert_headers(sync_client.raw_resp, request)
+    export_headers(sync_client.raw_resp, request)
 
     return {'data': record}
 
@@ -52,19 +54,18 @@ def record_put(request):
     record_id = request.matchdict['record_id']
     sync_id = record_id
 
-    if_unmodified_since = request.headers.get('If-Match')
-
+    headers = import_headers(request)
     record = request.validated['data']
     record['id'] = sync_id
 
     sync_client = build_sync_client(request)
     last_modified = sync_client.put_record(collection_name, record,
-                                           if_unmodified_since)
+                                           headers=headers)
     record['last_modified'] = int(last_modified * 1000)
     record['id'] = record_id
 
     # Configure headers
-    convert_headers(sync_client.raw_resp, request)
+    export_headers(sync_client.raw_resp, request)
 
     return {'data': record}
 
@@ -75,8 +76,9 @@ def record_delete(request):
     record_id = request.matchdict['record_id']
     sync_id = record_id
 
+    headers = import_headers(request)
     sync_client = build_sync_client(request)
-    sync_client.delete_record(collection_name, sync_id)
+    sync_client.delete_record(collection_name, sync_id, headers=headers)
 
     request.response.status_code = 204
     del request.response.headers['Content-Type']

@@ -153,7 +153,30 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
                              '_sort': 'newest'},
                      headers=self.headers, status=200)
         self.sync_client.return_value.get_records.assert_called_with(
-            "tabs", full=True, newer='14377478425.70', sort='newest')
+            "tabs", full=True, newer='14377478425.70', sort='newest',
+            headers={})
+
+    def test_collection_handle_if_none_match_headers(self):
+        headers = self.headers.copy()
+        headers['If-None-Match'] = '14377478425700'
+        self.app.get(COLLECTION_URL,
+                     params={'_since': '14377478425700',
+                             '_sort': 'newest'},
+                     headers=headers, status=200)
+        self.sync_client.return_value.get_records.assert_called_with(
+            "tabs", full=True, newer='14377478425.70', sort='newest',
+            headers={'X-If-Modified-Since': '14377478425.70'})
+
+    def test_collection_handle_if_match_headers(self):
+        headers = self.headers.copy()
+        headers['If-Match'] = '14377478425700'
+        self.app.get(COLLECTION_URL,
+                     params={'_since': '14377478425700',
+                             '_sort': 'newest'},
+                     headers=headers, status=200)
+        self.sync_client.return_value.get_records.assert_called_with(
+            "tabs", full=True, newer='14377478425.70', sort='newest',
+            headers={'X-If-Unmodified-Since': '14377478425.70'})
 
     def test_collection_raises_if_since_parameter_is_not_a_number(self):
         resp = self.app.get(COLLECTION_URL,
@@ -170,7 +193,8 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
                              '_sort': 'index'},
                      headers=self.headers, status=200)
         self.sync_client.return_value.get_records.assert_called_with(
-            "tabs", full=True, limit='2', offset='12345', sort='index')
+            "tabs", full=True, limit='2', offset='12345', sort='index',
+            headers={})
 
     def test_collection_raises_with_invalid_sort_parameter(self):
         resp = self.app.get(COLLECTION_URL,
@@ -226,6 +250,17 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.sync_client.return_value.delete_record.return_value = None
         self.app.delete(RECORD_URL, headers=self.headers, status=204)
 
+    def test_can_delete_record_handle_headers(self):
+        self.sync_client.return_value.delete_record.return_value = None
+
+        headers = self.headers.copy()
+        headers['If-Match'] = '14377478425700'
+
+        self.app.delete(RECORD_URL, headers=headers, status=204)
+        self.sync_client.return_value.delete_record.assert_called_with(
+            "tabs", RECORD_URL.split('/')[-1],
+            headers={'X-If-Unmodified-Since': '14377478425.70'})
+
     def test_delete_return_a_503_in_case_of_unknown_error(self):
         response = mock.MagicMock()
         response.status_code = 500
@@ -258,6 +293,17 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
                           headers=self.headers, status=200)
 
+    def test_put_record_handle_headers(self):
+        headers = self.headers.copy()
+        headers['If-None-Match'] = '*'
+
+        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                          headers=headers, status=200)
+        put_record_mock = self.sync_client.return_value.put_record
+        self.assertDictEqual(
+            put_record_mock.mock_calls[0][2]['headers'],
+            {'X-If-Unmodified-Since': 0})
+
     def test_put_record_reject_invalid_record(self):
         invalid = {"payload": "foobar"}
         self.app.put_json(RECORD_URL, invalid, headers=self.headers,
@@ -274,10 +320,17 @@ class RecordTest(BaseWebTest, unittest.TestCase):
     def test_put_return_a_400_in_case_of_bad_request(self):
         response = mock.MagicMock()
         response.status_code = 400
+        alert = ('{"code": "hard-eol", "message": "Bla", '
+                 '"url": "http://example.com"}')
+        response.headers = {'X-Weave-Alert': alert, 'X-Weave-Backoff': '3600'}
         self.sync_client.return_value.put_record.side_effect = HTTPError(
             response=response)
-        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
-                          headers=self.headers, status=400)
+        resp = self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                                 headers=self.headers, status=400)
+        self.assertIn('Alert', resp.headers)
+        self.assertEqual(resp.headers['Alert'], alert)
+        self.assertIn('Backoff', resp.headers)
+        self.assertEqual(resp.headers['Backoff'], '3600')
 
     def test_put_return_a_403_in_case_of_forbidden_resource(self):
         response = mock.MagicMock()
