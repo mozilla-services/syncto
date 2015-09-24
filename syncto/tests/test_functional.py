@@ -21,12 +21,13 @@ RECORD_EXAMPLE = {
 }
 
 
-class SettingsMissingTest(BaseWebTest, unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(unittest.TestCase, self).__init__(*args, **kwargs)
+class SettingsMissingTest(unittest.TestCase):
+    MANDATORY_SETTINGS = {
+        'syncto.cache_hmac_secret': 'This is not a secret'
+    }
 
     def test_syncto_cache_hmac_secret_missing(self):
-        settings = self.get_app_settings()
+        settings = self.MANDATORY_SETTINGS.copy()
         # Remove the mandatory setting we want to test
         del settings['syncto.cache_hmac_secret']
         self.assertRaises(ValueError, testapp, {}, **settings)
