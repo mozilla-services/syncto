@@ -6,6 +6,7 @@ from cliquet.errors import ERRORS
 from cliquet.tests.support import FormattedErrorMixin
 from requests.exceptions import HTTPError
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
+from syncto import main as testapp
 
 from .support import BaseWebTest, unittest
 
@@ -18,6 +19,18 @@ RECORD_EXAMPLE = {
         "payload": "abcd"
     }
 }
+
+
+class SettingsMissingTest(unittest.TestCase):
+    MANDATORY_SETTINGS = {
+        'syncto.cache_hmac_secret': 'This is not a secret'
+    }
+
+    def test_syncto_cache_hmac_secret_missing(self):
+        settings = self.MANDATORY_SETTINGS.copy()
+        # Remove the mandatory setting we want to test
+        del settings['syncto.cache_hmac_secret']
+        self.assertRaises(ValueError, testapp, {}, **settings)
 
 
 class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
@@ -97,7 +110,7 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
         headers = self.headers.copy()
         headers['Authorization'] = "BrowserID valid-browser-id-assertion"
         headers['X-Client-State'] = "ValidClientState"
-        with self.patched_client("syncto.authentication.SyncClient",
+        with self.patched_client("syncto.authentication.TokenserverClient",
                                  503, "Service Unavailable"):
             resp = self.app.get(COLLECTION_URL, headers=headers, status=503)
 
