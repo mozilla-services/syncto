@@ -58,5 +58,7 @@ class BuildSyncClientTest(unittest.TestCase):
                 SyncClient.assert_called_with(**self.credentials)
                 # Second time
                 build_sync_client(self.request)
+                # TokenServerClient should not have been called only
+                # once.
                 TSClient.assert_called_once_with('1234', '12345')
                 SyncClient.assert_called_with(**self.credentials)
