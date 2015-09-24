@@ -28,6 +28,7 @@ class BaseWebTest(object):
         settings['cliquet.storage_backend'] = 'cliquet.storage.memory'
         settings['cliquet.permission_backend'] = 'cliquet.permission.memory'
         settings['cliquet.userid_hmac_secret'] = "this is not a secret"
+        settings['syncto.cache_hmac_secret'] = 'This is not a secret'
 
         if additional_settings is not None:
             settings.update(additional_settings)

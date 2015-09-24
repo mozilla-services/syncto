@@ -6,6 +6,7 @@ from cliquet.errors import ERRORS
 from cliquet.tests.support import FormattedErrorMixin
 from requests.exceptions import HTTPError
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
+from syncto import main as testapp
 
 from .support import BaseWebTest, unittest
 
@@ -18,6 +19,17 @@ RECORD_EXAMPLE = {
         "payload": "abcd"
     }
 }
+
+
+class SettingsMissingTest(BaseWebTest, unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(unittest.TestCase, self).__init__(*args, **kwargs)
+
+    def test_syncto_cache_hmac_secret_missing(self):
+        settings = self.get_app_settings()
+        # Remove the mandatory setting we want to test
+        del settings['syncto.cache_hmac_secret']
+        self.assertRaises(ValueError, testapp, {}, **settings)
 
 
 class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
