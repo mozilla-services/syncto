@@ -18,6 +18,12 @@ By default, *Sycnto* persists internal cache in Redis.
 
     make serve
 
+If you already installed Syncto earlier and you want to recreate a
+full environment (because of errors when running ``make serve``), please run::
+
+    make maintainer-clean serve
+
+
 Authentication
 --------------
 
