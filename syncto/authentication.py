@@ -48,8 +48,20 @@ def build_sync_client(request):
     if not credentials:
         ttl = int(settings['syncto.cache_credentials_ttl_seconds'])
         tokenserver = TokenserverClient(bid_assertion, client_state)
+        if request.registry.statsd:
+            request.registry.statsd.watch_execution_time(tokenserver,
+                                                         prefix="tokenserver")
         credentials = tokenserver.get_hawk_credentials(duration=ttl)
         request.registry.cache.set(cache_key, credentials, ttl)
 
+    if request.registry.statsd:
+        timer = request.registry.statsd.timer("syncclient.start_time")
+        timer.start()
+
     sync_client = SyncClient(**credentials)
+
+    if request.registry.statsd:
+        timer.stop()
+        request.registry.statsd.watch_execution_time(sync_client,
+                                                     prefix="syncclient")
     return sync_client
