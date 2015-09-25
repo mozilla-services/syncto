@@ -178,6 +178,24 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             "tabs", full=True, newer='14377478425.70', sort='newest',
             headers={'X-If-Unmodified-Since': '14377478425.70'})
 
+    def test_collection_raises_on_wrong_if_none_match_header_value(self):
+        headers = self.headers.copy()
+        headers['If-None-Match'] = 'abc'
+        resp = self.app.get(COLLECTION_URL, headers=headers, status=400)
+
+        self.assertFormattedError(
+            resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
+            "headers: Invalid value for If-None-Match")
+
+    def test_collection_raises_on_wrong_if_match_header_value(self):
+        headers = self.headers.copy()
+        headers['If-Match'] = '42'
+        resp = self.app.get(COLLECTION_URL, headers=headers, status=400)
+
+        self.assertFormattedError(
+            resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
+            "headers: Invalid value for If-Match")
+
     def test_collection_raises_if_since_parameter_is_not_a_number(self):
         resp = self.app.get(COLLECTION_URL,
                             params={'_since': 'not-a-number'},

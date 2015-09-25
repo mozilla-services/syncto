@@ -24,19 +24,19 @@ def import_headers(syncto_request, sync_request_headers=None):
 
     if 'If-None-Match' in request_headers:
         if_none_match = request_headers['If-None-Match']
-        try:
-            assert if_none_match[0] == if_none_match[-1] == '"'
-            modified_since = int(if_none_match[1:-1])
-        except (IndexError, AssertionError, ValueError):
-            error_details = {
-                'location': 'headers',
-                'description': "Invalid value for If-None-Match"
-            }
-            raise_invalid(syncto_request, **error_details)
-
-        if modified_since == '"*"':
+        if if_none_match == '"*"':
             headers['X-If-Unmodified-Since'] = 0
         else:
+            try:
+                assert if_none_match[0] == if_none_match[-1] == '"'
+                modified_since = int(if_none_match[1:-1])
+            except (IndexError, AssertionError, ValueError):
+                error_details = {
+                    'location': 'headers',
+                    'description': "Invalid value for If-None-Match"
+                }
+                raise_invalid(syncto_request, **error_details)
+
             headers['X-If-Modified-Since'] = '%.2f' % (
                 int(modified_since) / 1000.0)
 
