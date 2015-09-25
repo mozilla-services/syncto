@@ -1,4 +1,5 @@
 from cliquet import utils
+from cliquet.errors import raise_invalid
 
 
 def import_headers(syncto_request, sync_request_headers=None):
@@ -7,15 +8,37 @@ def import_headers(syncto_request, sync_request_headers=None):
     headers = sync_request_headers or {}
 
     if 'If-Match' in request_headers:
-        headers['X-If-Unmodified-Since'] = '%.2f' % (
-            int(request_headers['If-Match']) / 1000.0)
+        if_match = request_headers['If-Match']
+        try:
+            assert if_match[0] == if_match[-1] == '"'
+            unmodified_since = int(if_match[1:-1])
+        except (IndexError, AssertionError, ValueError):
+            error_details = {
+                'location': 'headers',
+                'description': "Invalid value for If-Match"
+            }
+            raise_invalid(syncto_request, **error_details)
+        else:
+            headers['X-If-Unmodified-Since'] = '%.2f' % (
+                int(unmodified_since) / 1000.0)
 
     if 'If-None-Match' in request_headers:
-        if request_headers['If-None-Match'] == '*':
+        if_none_match = request_headers['If-None-Match']
+        try:
+            assert if_none_match[0] == if_none_match[-1] == '"'
+            modified_since = int(if_none_match[1:-1])
+        except (IndexError, AssertionError, ValueError):
+            error_details = {
+                'location': 'headers',
+                'description': "Invalid value for If-None-Match"
+            }
+            raise_invalid(syncto_request, **error_details)
+
+        if modified_since == '"*"':
             headers['X-If-Unmodified-Since'] = 0
         else:
             headers['X-If-Modified-Since'] = '%.2f' % (
-                int(request_headers['If-None-Match']) / 1000.0)
+                int(modified_since) / 1000.0)
 
     return headers
 

@@ -156,9 +156,9 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             "tabs", full=True, newer='14377478425.70', sort='newest',
             headers={})
 
-    def test_collection_handle_if_none_match_headers(self):
+    def test_collection_handles_if_none_match_headers(self):
         headers = self.headers.copy()
-        headers['If-None-Match'] = '14377478425700'
+        headers['If-None-Match'] = '"14377478425700"'
         self.app.get(COLLECTION_URL,
                      params={'_since': '14377478425700',
                              '_sort': 'newest'},
@@ -169,7 +169,7 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
     def test_collection_handle_if_match_headers(self):
         headers = self.headers.copy()
-        headers['If-Match'] = '14377478425700'
+        headers['If-Match'] = '"14377478425700"'
         self.app.get(COLLECTION_URL,
                      params={'_since': '14377478425700',
                              '_sort': 'newest'},
@@ -250,11 +250,11 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.sync_client.return_value.delete_record.return_value = None
         self.app.delete(RECORD_URL, headers=self.headers, status=204)
 
-    def test_can_delete_record_handle_headers(self):
+    def test_can_delete_record_handles_if_match_headers(self):
         self.sync_client.return_value.delete_record.return_value = None
 
         headers = self.headers.copy()
-        headers['If-Match'] = '14377478425700'
+        headers['If-Match'] = '"14377478425700"'
 
         self.app.delete(RECORD_URL, headers=headers, status=204)
         self.sync_client.return_value.delete_record.assert_called_with(
@@ -293,9 +293,9 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
                           headers=self.headers, status=200)
 
-    def test_put_record_handle_headers(self):
+    def test_put_record_handles_if_none_match_headers(self):
         headers = self.headers.copy()
-        headers['If-None-Match'] = '*'
+        headers['If-None-Match'] = '"*"'
 
         self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
                           headers=headers, status=200)
@@ -317,7 +317,7 @@ class RecordTest(BaseWebTest, unittest.TestCase):
         self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
                           headers=self.headers, status=503)
 
-    def test_put_return_a_400_in_case_of_bad_request(self):
+    def test_bad_request_returns_alert_and_backoff_response_headers(self):
         response = mock.MagicMock()
         response.status_code = 400
         alert = ('{"code": "hard-eol", "message": "Bla", '
