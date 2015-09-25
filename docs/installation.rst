@@ -5,7 +5,7 @@ Installation
 Run locally
 ===========
 
-*Sycnto* is based on top of the `cliquet <http://cliquet.rtfd.org>`_ project, and
+*Sycnto* is based on top of the `cliquet <https://cliquet.readthedocs.org>`_ project, and
 as such, please refer to cliquet's documentation for more details.
 
 
