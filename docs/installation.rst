@@ -16,6 +16,8 @@ By default, *Sycnto* persists internal cache in Redis.
 
 ::
 
+    git clone https://github.com/mozilla-services/syncto
+    cd syncto
     make serve
 
 If you already installed Syncto earlier and you want to recreate a
