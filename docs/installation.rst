@@ -24,7 +24,7 @@ Authentication
 By default, *Sycnto* relies on Firefox Account OAuth2 Bearer tokens to authenticate
 users.
 
-See `cliquet documentation <http://cliquet.readthedocs.org/en/latest/configuration.html#authentication>`_
+See `cliquet documentation <https://cliquet.readthedocs.org/en/latest/configuration.html#authentication>`_
 to configure authentication options.
 
 Note that you will also need to pass through a BrowserID assertion in
