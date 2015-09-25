@@ -40,28 +40,30 @@ def build_sync_client(request):
     client_state = request.headers[CLIENT_STATE_HEADER]
 
     settings = request.registry.settings
+    cache = request.registry.cache
+    statsd = request.registry.statsd
+
     hmac_secret = settings['syncto.cache_hmac_secret']
     cache_key = 'credentials_%s' % utils.hmac_digest(hmac_secret, client_state)
 
-    credentials = request.registry.cache.get(cache_key)
+    credentials = cache.get(cache_key)
 
     if not credentials:
         ttl = int(settings['syncto.cache_credentials_ttl_seconds'])
         tokenserver = TokenserverClient(bid_assertion, client_state)
-        if request.registry.statsd:
-            request.registry.statsd.watch_execution_time(tokenserver,
-                                                         prefix="tokenserver")
+        if statsd:
+            statsd.watch_execution_time(tokenserver, prefix="tokenserver")
         credentials = tokenserver.get_hawk_credentials(duration=ttl)
-        request.registry.cache.set(cache_key, credentials, ttl)
+        cache.set(cache_key, credentials, ttl)
 
-    if request.registry.statsd:
-        timer = request.registry.statsd.timer("syncclient.start_time")
+    if statsd:
+        timer = statsd.timer("syncclient.start_time")
         timer.start()
 
     sync_client = SyncClient(**credentials)
 
-    if request.registry.statsd:
+    if statsd:
         timer.stop()
-        request.registry.statsd.watch_execution_time(sync_client,
-                                                     prefix="syncclient")
+        statsd.watch_execution_time(sync_client, prefix="syncclient")
+
     return sync_client
