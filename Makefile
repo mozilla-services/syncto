@@ -8,7 +8,7 @@ DEV_STAMP = $(VENV)/.dev_env_installed.stamp
 INSTALL_STAMP = $(VENV)/.install.stamp
 
 .IGNORE: clean
-.PHONY: all install install-dev virtualenv tests clean maintainer-clean docs
+.PHONY: all install install-dev virtualenv tests clean distclean maintainer-clean docs
 
 OBJECTS = .venv .coverage
 
@@ -44,9 +44,11 @@ clean:
 	find . -name '*.pyc' -delete
 	find . -name '__pycache__' -type d -exec rm -fr {} \;
 
-maintainer-clean: clean
-	rm -fr .venv/
-	rm -fr .tox/
+distclean: clean
+	rm -fr *.egg *.egg-info/
+
+maintainer-clean: distclean
+	rm -fr .venv/ .tox/ dist/ build/
 
 # loadtest-check: install
 # 	$(VENV)/bin/cliquet --ini loadtests/server.ini migrate > syncto.log &&\
