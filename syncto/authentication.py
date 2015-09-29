@@ -14,7 +14,7 @@ def build_sync_client(request):
     starts_with_browser_id = False
     if is_authorization_defined:
         authorization = request.headers[AUTHORIZATION_HEADER].lower()
-        starts_with_browser_id = authorization.startswith("browserid")
+        starts_with_browser_id = authorization.startswith("browserid ")
 
     if not is_authorization_defined or not starts_with_browser_id:
         error_msg = "Provide a BID assertion %s header." % (
