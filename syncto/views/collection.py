@@ -67,4 +67,5 @@ def collection_get(request):
     # Configure headers
     export_headers(sync_client.raw_resp, request)
 
-    return {'data': records}
+    if records:
+        return {'data': records}

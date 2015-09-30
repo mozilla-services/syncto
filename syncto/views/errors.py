@@ -19,7 +19,9 @@ def error(context, request):
     message = '%s %s: %s' % (context.response.status_code,
                              context.response.reason,
                              context.response.text)
-    if context.response.status_code == 400:
+    if context.response.status_code == 304:
+        response = httpexceptions.HTTPNotModified()
+    elif context.response.status_code == 400:
         response = http_error(httpexceptions.HTTPBadRequest(),
                               errno=ERRORS.INVALID_PARAMETERS,
                               message=message)
