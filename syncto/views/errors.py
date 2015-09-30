@@ -40,6 +40,7 @@ def error(context, request):
     else:
         response = service_unavailable(context, request)
 
-    export_headers(context.response, response)
+    request.response = response
+    export_headers(context.response, request)
 
     return reapply_cors(request, response)
