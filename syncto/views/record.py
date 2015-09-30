@@ -41,7 +41,7 @@ def record_get(request):
     record['last_modified'] = int(record.pop('modified') * 1000)
 
     # Configure headers
-    convert_headers(sync_client.raw_resp, request.response)
+    convert_headers(sync_client.raw_resp, request)
 
     return {'data': record}
 
@@ -64,7 +64,7 @@ def record_put(request):
     record['id'] = record_id
 
     # Configure headers
-    convert_headers(sync_client.raw_resp, request.response)
+    convert_headers(sync_client.raw_resp, request)
 
     return {'data': record}
 

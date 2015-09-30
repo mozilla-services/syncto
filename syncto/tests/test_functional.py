@@ -194,7 +194,8 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
         self.assertIn('Next-Page', resp.headers)
         self.assertIn('Quota-Remaining', resp.headers)
         self.assertEquals(resp.headers['Total-Records'], '1')
-        self.assertEquals(resp.headers['Next-Page'], '12345')
+        next_page = 'http://localhost/v1' + COLLECTION_URL + '?_token=12345'
+        self.assertEquals(resp.headers['Next-Page'], next_page)
         self.assertEquals(resp.headers['Quota-Remaining'], '125')
 
 
