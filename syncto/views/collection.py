@@ -62,6 +62,6 @@ def collection_get(request):
         r['last_modified'] = int(r.pop('modified') * 1000)
 
     # Configure headers
-    convert_headers(sync_client.raw_resp, request.response)
+    convert_headers(sync_client.raw_resp, request)
 
     return {'data': records}
