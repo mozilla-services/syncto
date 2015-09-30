@@ -33,10 +33,7 @@ class SettingsMissingTest(unittest.TestCase):
         self.assertRaises(ValueError, testapp, {}, **settings)
 
 
-class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
-
-    def __init__(self, *args, **kwargs):
-        super(FunctionalTest, self).__init__(*args, **kwargs)
+class ErrorsTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
     def test_authorization_header_is_required_for_collection(self):
         resp = self.app.get(COLLECTION_URL, headers=self.headers, status=401)
@@ -118,29 +115,42 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
             resp, 503, ERRORS.BACKEND, "Service Unavailable", "retry later")
 
 
-class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
+class BaseViewTest(BaseWebTest, unittest.TestCase):
+    patch_authent_for = 'record'
 
     def setUp(self):
+        super(BaseViewTest, self).setUp()
+
         self.headers.update({
             AUTHORIZATION_HEADER: "BrowserID abcd",
             CLIENT_STATE_HEADER: "1234",
             'Origin': 'http://localhost:8000'
         })
-        p = mock.patch("syncto.views.collection.build_sync_client")
+
+        last_modified = 14377478425.69
+
+        p = mock.patch("syncto.views.%s.build_sync_client" %
+                       self.patch_authent_for)
         self.sync_client = p.start()
         self.sync_client.return_value._authenticate.return_value = None
         self.sync_client.return_value.get_records.return_value = [{
             "id": "Y_-5-LEeQBuh60IT0MyWEQ",
-            "modified": 14377478425.69
+            "modified": last_modified
         }]
         headers = {}
-        headers['X-Last-Modified'] = '14377478425.69'
+        headers['X-Last-Modified'] = '%s' % last_modified
         headers['X-Weave-Records'] = '1'
         headers['X-Weave-Next-Offset'] = '12345'
         headers['X-Weave-Quota-Remaining'] = '125'
         self.sync_client.return_value.raw_resp.headers = headers
+        self.sync_client.return_value.put_record.return_value = last_modified
 
         self.addCleanup(p.stop)
+
+
+class CollectionTest(FormattedErrorMixin, BaseViewTest):
+
+    patch_authent_for = 'collection'
 
     def test_collection_handle_cors_headers(self):
         resp = self.app.get(COLLECTION_URL,
@@ -251,24 +261,7 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
         self.assertEqual(resp.body, b'')
 
 
-class RecordTest(BaseWebTest, unittest.TestCase):
-
-    def setUp(self):
-        self.headers.update({
-            AUTHORIZATION_HEADER: "BrowserID abcd",
-            CLIENT_STATE_HEADER: "1234",
-            'Origin': 'http://localhost:8000'
-        })
-        p = mock.patch("syncto.views.record.build_sync_client")
-        self.sync_client = p.start()
-        self.sync_client.return_value._authenticate.return_value = None
-        self.sync_client.return_value.get_record.return_value = {
-            "id": "Y_-5-LEeQBuh60IT0MyWEQ",
-            "modified": 14377478425.69
-        }
-        self.sync_client.return_value.put_record.return_value = 14377478425.69
-
-        self.addCleanup(p.stop)
+class RecordTest(BaseViewTest):
 
     def test_record_handle_cors_headers(self):
         resp = self.app.get(RECORD_URL, headers=self.headers, status=200)
@@ -383,3 +376,33 @@ class RecordTest(BaseWebTest, unittest.TestCase):
             response=response)
         resp = self.app.get(RECORD_URL, headers=self.headers, status=304)
         self.assertEqual(resp.body, b'')
+
+
+class WriteSafeguardTest(BaseViewTest):
+    def get_app_settings(self, extra=None):
+        settings = super(WriteSafeguardTest, self).get_app_settings(extra)
+        settings['syncto.record_tabs_put_enabled'] = False
+        settings['syncto.record_tabs_delete_enabled'] = False
+        return settings
+
+    def test_record_put_is_disabled_on_meta_and_crypto(self):
+        url = RECORD_URL.replace('tabs', 'meta')
+        self.app.put_json(url, RECORD_EXAMPLE,
+                          headers=self.headers, status=405)
+
+    def test_record_delete_is_disabled_on_meta_and_crypto(self):
+        url = RECORD_URL.replace('tabs', 'meta')
+        self.app.delete(url, headers=self.headers, status=405)
+
+    def test_record_put_is_disabled(self):
+        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                          headers=self.headers, status=405)
+
+    def test_record_delete_is_disabled(self):
+        self.app.delete(RECORD_URL, headers=self.headers, status=405)
+
+    def test_message_provides_details(self):
+        r = self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                              headers=self.headers, status=405)
+        expected = 'Endpoint disabled for this collection in configuration.'
+        self.assertEqual(r.json['message'], expected)
