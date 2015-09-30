@@ -17,21 +17,19 @@ def build_sync_client(request):
         starts_with_browser_id = authorization.startswith("browserid ")
 
     if not is_authorization_defined or not starts_with_browser_id:
-        error_msg = "Provide a BID assertion %s header." % (
-            AUTHORIZATION_HEADER)
+        msg = "Provide a BID assertion %s header." % AUTHORIZATION_HEADER
         response = http_error(httpexceptions.HTTPUnauthorized(),
                               errno=ERRORS.MISSING_AUTH_TOKEN,
-                              message=error_msg)
+                              message=msg)
         response.headers.extend(forget(request))
         raise response
 
     is_client_state_defined = CLIENT_STATE_HEADER in request.headers
     if not is_client_state_defined:
-        error_msg = "Provide the tokenserver %s header." % (
-            CLIENT_STATE_HEADER)
+        msg = "Provide the tokenserver %s header." % CLIENT_STATE_HEADER
         response = http_error(httpexceptions.HTTPUnauthorized(),
                               errno=ERRORS.MISSING_AUTH_TOKEN,
-                              message=error_msg)
+                              message=msg)
         response.headers.extend(forget(request))
         raise response
 
@@ -44,7 +42,8 @@ def build_sync_client(request):
     statsd = request.registry.statsd
 
     hmac_secret = settings['syncto.cache_hmac_secret']
-    cache_key = 'credentials_%s' % utils.hmac_digest(hmac_secret, client_state)
+    cache_key = 'credentials_%s' % utils.hmac_digest(hmac_secret,
+                                                     bid_assertion)
 
     credentials = cache.get(cache_key)
 
