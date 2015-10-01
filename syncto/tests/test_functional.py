@@ -99,7 +99,7 @@ class FunctionalTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
         headers = self.headers.copy()
         headers['Authorization'] = "BrowserID valid-browser-id-assertion"
         headers['X-Client-State'] = "NonSense"
-        with self.patched_client("syncto.authentication.SyncClient"):
+        with self.patched_client("syncto.authentication.TokenserverClient"):
             resp = self.app.get(COLLECTION_URL, headers=headers, status=401)
 
         self.assertFormattedError(
@@ -240,6 +240,16 @@ class CollectionTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
         self.assertEquals(resp.headers['Next-Page'], next_page)
         self.assertEquals(resp.headers['Quota-Remaining'], '125')
 
+    def test_collection_return_a_307_in_case_of_not_modified_resource(self):
+        response = mock.MagicMock()
+        response.status_code = 304
+        response.reason = "Not Modified"
+        response.url = "http://www.example.com/"
+        self.sync_client.return_value.get_records.side_effect = HTTPError(
+            response=response)
+        resp = self.app.get(COLLECTION_URL, headers=self.headers, status=304)
+        self.assertEqual(resp.body, b'')
+
 
 class RecordTest(BaseWebTest, unittest.TestCase):
 
@@ -365,3 +375,11 @@ class RecordTest(BaseWebTest, unittest.TestCase):
             response=response)
         self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
                           headers=self.headers, status=404)
+
+    def test_get_return_a_307_in_case_of_not_modified_resource(self):
+        response = mock.MagicMock()
+        response.status_code = 304
+        self.sync_client.return_value.get_record.side_effect = HTTPError(
+            response=response)
+        resp = self.app.get(RECORD_URL, headers=self.headers, status=304)
+        self.assertEqual(resp.body, b'')
