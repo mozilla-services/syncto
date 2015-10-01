@@ -4,7 +4,7 @@ from cliquet import Service
 from cliquet.errors import raise_invalid
 
 from syncto.authentication import build_sync_client
-from syncto.headers import convert_headers
+from syncto.headers import import_headers, export_headers
 
 
 collection = Service(name='collection',
@@ -19,6 +19,8 @@ collection = Service(name='collection',
 def collection_get(request):
     collection_name = request.matchdict['collection_name']
     sync_client = build_sync_client(request)
+
+    headers = import_headers(request)
 
     params = {}
     if '_since' in request.GET:
@@ -56,12 +58,14 @@ def collection_get(request):
         params['ids'] = [record_id.strip() for record_id in
                          request.GET['ids'].split(',') if record_id]
 
-    records = sync_client.get_records(collection_name, full=True, **params)
+    records = sync_client.get_records(collection_name, full=True,
+                                      headers=headers, **params)
 
     for r in records:
         r['last_modified'] = int(r.pop('modified') * 1000)
 
     # Configure headers
-    convert_headers(sync_client.raw_resp, request)
+    export_headers(sync_client.raw_resp, request)
 
-    return {'data': records}
+    if records:
+        return {'data': records}
