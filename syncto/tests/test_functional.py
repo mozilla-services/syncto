@@ -378,7 +378,7 @@ class RecordTest(BaseViewTest):
         self.assertEqual(resp.body, b'')
 
 
-class WriteSafeguardTest(BaseViewTest):
+class WriteSafeguardTest(FormattedErrorMixin, BaseViewTest):
     def get_app_settings(self, extra=None):
         settings = super(WriteSafeguardTest, self).get_app_settings(extra)
         settings['syncto.record_tabs_put_enabled'] = False
@@ -402,7 +402,8 @@ class WriteSafeguardTest(BaseViewTest):
         self.app.delete(RECORD_URL, headers=self.headers, status=405)
 
     def test_message_provides_details(self):
-        r = self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
-                              headers=self.headers, status=405)
-        expected = 'Endpoint disabled for this collection in configuration.'
-        self.assertEqual(r.json['message'], expected)
+        resp = self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                                 headers=self.headers, status=405)
+        self.assertFormattedError(
+            resp, 405, ERRORS.METHOD_NOT_ALLOWED, 'Method Not Allowed',
+            'Endpoint disabled for this collection in configuration.')

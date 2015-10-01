@@ -34,6 +34,7 @@ def assert_endpoint_enabled(request, collection_name):
     if not enabled:
         error_msg = 'Endpoint disabled for this collection in configuration.'
         response = errors.http_error(httpexceptions.HTTPMethodNotAllowed(),
+                                     errno=errors.ERRORS.METHOD_NOT_ALLOWED,
                                      message=error_msg)
         raise response
 

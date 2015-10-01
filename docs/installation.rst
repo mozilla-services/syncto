@@ -120,7 +120,7 @@ Recommended settings
 
 Most default setting values in the application code base are suitable for production.
 
-However, **for safety reasons**, it might appropriate to disable write operations
+However, **for safety reasons**, it might be appropriate to disable write operations
 to remote Sync collections:
 
 .. code-block :: ini
