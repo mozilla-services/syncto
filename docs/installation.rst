@@ -120,21 +120,7 @@ Recommended settings
 
 Most default setting values in the application code base are suitable for production.
 
-However, **for safety reasons**, it might be appropriate to disable write operations
-to remote Sync collections:
-
-.. code-block :: ini
-
-    syncto.record_tabs_put_enabled = false
-    syncto.record_tabs_delete_enabled = false
-    syncto.record_passwords_put_enabled = false
-    syncto.record_passwords_delete_enabled = false
-    syncto.record_bookmarks_put_enabled = false
-    syncto.record_bookmarks_delete_enabled = false
-    syncto.record_history_put_enabled = false
-    syncto.record_history_delete_enabled = false
-
-Furthermore, the set of settings mentionned below might deserve some review or adjustments:
+However, the set of settings mentionned below might deserve some review or adjustments:
 
 .. code-block :: ini
 
@@ -150,6 +136,25 @@ Furthermore, the set of settings mentionned below might deserve some review or a
 
     For an exhaustive list of available settings and their default values,
     refer to `cliquet source code <https://github.com/mozilla-services/cliquet/blob/2.3.1/cliquet/__init__.py#L26-L78>`_.
+
+
+Enable write access
+-------------------
+
+By default, collections are read-only. In order to enable write operations
+on remote Sync collections, add some settings in the configuration with the
+collection name:
+
+.. code-block :: ini
+
+    syncto.record_tabs_put_enabled = true
+    syncto.record_tabs_delete_enabled = true
+    syncto.record_passwords_put_enabled = true
+    syncto.record_passwords_delete_enabled = true
+    syncto.record_bookmarks_put_enabled = true
+    syncto.record_bookmarks_delete_enabled = true
+    syncto.record_history_put_enabled = true
+    syncto.record_history_delete_enabled = true
 
 
 Monitoring
