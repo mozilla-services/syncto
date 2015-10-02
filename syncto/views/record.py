@@ -30,7 +30,7 @@ def assert_endpoint_enabled(request, collection_name):
     settings = request.registry.settings
     method = request.method.lower()
     setting_key = 'syncto.record_%s_%s_enabled' % (collection_name, method)
-    enabled = settings.get(setting_key, True)
+    enabled = settings.get(setting_key, False)
     if not enabled:
         error_msg = 'Endpoint disabled for this collection in configuration.'
         response = errors.http_error(httpexceptions.HTTPMethodNotAllowed(),

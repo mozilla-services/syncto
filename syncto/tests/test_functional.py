@@ -147,6 +147,12 @@ class BaseViewTest(BaseWebTest, unittest.TestCase):
 
         self.addCleanup(p.stop)
 
+    def get_app_settings(self, extra=None):
+        settings = super(BaseViewTest, self).get_app_settings(extra)
+        settings['syncto.record_tabs_put_enabled'] = True
+        settings['syncto.record_tabs_delete_enabled'] = True
+        return settings
+
 
 class CollectionTest(FormattedErrorMixin, BaseViewTest):
 
@@ -379,30 +385,18 @@ class RecordTest(BaseViewTest):
 
 
 class WriteSafeguardTest(FormattedErrorMixin, BaseViewTest):
-    def get_app_settings(self, extra=None):
-        settings = super(WriteSafeguardTest, self).get_app_settings(extra)
-        settings['syncto.record_tabs_put_enabled'] = False
-        settings['syncto.record_tabs_delete_enabled'] = False
-        return settings
-
-    def test_record_put_is_disabled_on_meta_and_crypto(self):
+    def test_record_put_is_disabled_by_default(self):
         url = RECORD_URL.replace('tabs', 'meta')
         self.app.put_json(url, RECORD_EXAMPLE,
                           headers=self.headers, status=405)
 
-    def test_record_delete_is_disabled_on_meta_and_crypto(self):
+    def test_record_delete_is_disabled_by_default(self):
         url = RECORD_URL.replace('tabs', 'meta')
         self.app.delete(url, headers=self.headers, status=405)
 
-    def test_record_put_is_disabled(self):
-        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
-                          headers=self.headers, status=405)
-
-    def test_record_delete_is_disabled(self):
-        self.app.delete(RECORD_URL, headers=self.headers, status=405)
-
     def test_message_provides_details(self):
-        resp = self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+        url = RECORD_URL.replace('tabs', 'meta')
+        resp = self.app.put_json(url, RECORD_EXAMPLE,
                                  headers=self.headers, status=405)
         self.assertFormattedError(
             resp, 405, ERRORS.METHOD_NOT_ALLOWED, 'Method Not Allowed',
