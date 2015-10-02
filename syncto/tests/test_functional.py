@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from cliquet.errors import ERRORS
 from cliquet.tests.support import FormattedErrorMixin
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, ConnectionError
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 from syncto import main as testapp
 
@@ -113,6 +113,20 @@ class ErrorsTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
         self.assertFormattedError(
             resp, 503, ERRORS.BACKEND, "Service Unavailable", "retry later")
+
+    def test_error_with_syncclient_server_request(self):
+        headers = self.headers.copy()
+        headers['Authorization'] = "BrowserID valid-browser-id-assertion"
+        headers['X-Client-State'] = "ValidClientState"
+        with mock.patch("syncto.authentication.TokenserverClient",
+                        side_effect=ConnectionError):
+            resp = self.app.get(COLLECTION_URL, headers=headers, status=503)
+
+            error_msg = ("Unable to reach the service. Check your "
+                         "internet connection or firewall configuration.")
+
+        self.assertFormattedError(
+            resp, 503, ERRORS.BACKEND, "Service Unavailable", error_msg)
 
 
 class BaseViewTest(BaseWebTest, unittest.TestCase):
