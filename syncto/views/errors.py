@@ -13,7 +13,7 @@ from syncto.headers import export_headers
 
 @view_config(context=HTTPError, permission=NO_PERMISSION_REQUIRED)
 def response_error(context, request):
-    """Catch server errors and trace them."""
+    """Catch response error from Sync and trace them."""
     message = '%s %s: %s' % (context.response.status_code,
                              context.response.reason,
                              context.response.text)
@@ -54,7 +54,7 @@ def response_error(context, request):
 
 @view_config(context=RequestException, permission=NO_PERMISSION_REQUIRED)
 def request_error(context, request):
-    """Catch requests errors when issuing a request."""
+    """Catch requests errors when issuing a request to Sync."""
     logger.error(context, exc_info=True)
 
     error_msg = ("Unable to reach the service. "
