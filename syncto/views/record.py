@@ -1,7 +1,8 @@
 import re
 
 import colander
-from cliquet import Service, schema
+from cliquet import Service, schema, errors
+from pyramid import httpexceptions
 from pyramid.security import NO_PERMISSION_REQUIRED
 
 from syncto.authentication import build_sync_client
@@ -21,6 +22,21 @@ class PayloadSchema(colander.MappingSchema):
 
     def schema_type(self, **kw):
         return colander.Mapping(unknown='raise')
+
+
+def assert_endpoint_enabled(request, collection_name):
+    """Check that endpoint is not disabled from configuration.
+    """
+    settings = request.registry.settings
+    method = request.method.lower()
+    setting_key = 'syncto.record_%s_%s_enabled' % (collection_name, method)
+    enabled = settings.get(setting_key, True)
+    if not enabled:
+        error_msg = 'Endpoint disabled for this collection in configuration.'
+        response = errors.http_error(httpexceptions.HTTPMethodNotAllowed(),
+                                     errno=errors.ERRORS.METHOD_NOT_ALLOWED,
+                                     message=error_msg)
+        raise response
 
 
 record = Service(name='record',
@@ -51,6 +67,9 @@ def record_get(request):
 @record.put(permission=NO_PERMISSION_REQUIRED, schema=PayloadSchema)
 def record_put(request):
     collection_name = request.matchdict['collection_name']
+
+    assert_endpoint_enabled(request, collection_name)
+
     record_id = request.matchdict['record_id']
     sync_id = record_id
 
@@ -73,6 +92,9 @@ def record_put(request):
 @record.delete(permission=NO_PERMISSION_REQUIRED)
 def record_delete(request):
     collection_name = request.matchdict['collection_name']
+
+    assert_endpoint_enabled(request, collection_name)
+
     record_id = request.matchdict['record_id']
     sync_id = record_id
 

@@ -120,8 +120,21 @@ Recommended settings
 
 Most default setting values in the application code base are suitable for production.
 
-But the set of settings mentionned below might deserve some review or adjustments:
+However, **for safety reasons**, it might be appropriate to disable write operations
+to remote Sync collections:
 
+.. code-block :: ini
+
+    syncto.record_tabs_put_enabled = false
+    syncto.record_tabs_delete_enabled = false
+    syncto.record_passwords_put_enabled = false
+    syncto.record_passwords_delete_enabled = false
+    syncto.record_bookmarks_put_enabled = false
+    syncto.record_bookmarks_delete_enabled = false
+    syncto.record_history_put_enabled = false
+    syncto.record_history_delete_enabled = false
+
+Furthermore, the set of settings mentionned below might deserve some review or adjustments:
 
 .. code-block :: ini
 

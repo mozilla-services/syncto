@@ -19,7 +19,11 @@ CLIENT_STATE_HEADER = 'X-Client-State'
 
 DEFAULT_SETTINGS = {
     'syncto.cache_hmac_secret': None,
-    'syncto.cache_credentials_ttl_seconds': 300
+    'syncto.cache_credentials_ttl_seconds': 300,
+    'syncto.record_meta_put_enabled': False,
+    'syncto.record_meta_delete_enabled': False,
+    'syncto.record_crypto_put_enabled': False,
+    'syncto.record_crypto_delete_enabled': False,
 }
 
 
