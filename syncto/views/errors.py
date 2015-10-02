@@ -1,7 +1,7 @@
 from pyramid import httpexceptions
 from pyramid.security import NO_PERMISSION_REQUIRED, forget
 from pyramid.view import view_config
-from requests.exceptions import HTTPError
+from requests.exceptions import HTTPError, RequestException
 
 from cliquet import logger
 from cliquet.errors import http_error, ERRORS
@@ -12,8 +12,8 @@ from syncto.headers import export_headers
 
 
 @view_config(context=HTTPError, permission=NO_PERMISSION_REQUIRED)
-def error(context, request):
-    """Catch server errors and trace them."""
+def response_error(context, request):
+    """Catch response error from Sync and trace them."""
     message = '%s %s: %s' % (context.response.status_code,
                              context.response.reason,
                              context.response.text)
@@ -42,9 +42,25 @@ def error(context, request):
                                   errno=ERRORS.INVALID_RESOURCE_ID,
                                   message=message)
         else:
-            response = service_unavailable(context, request)
+            response = service_unavailable(
+                httpexceptions.HTTPServiceUnavailable(),
+                request)
 
     request.response = response
     export_headers(context.response, request)
 
     return reapply_cors(request, response)
+
+
+@view_config(context=RequestException, permission=NO_PERMISSION_REQUIRED)
+def request_error(context, request):
+    """Catch requests errors when issuing a request to Sync."""
+    logger.error(context, exc_info=True)
+
+    error_msg = ("Unable to reach the service. "
+                 "Check your internet connection or firewall configuration.")
+    response = http_error(httpexceptions.HTTPServiceUnavailable(),
+                          errno=ERRORS.BACKEND,
+                          message=error_msg)
+
+    return service_unavailable(response, request)
