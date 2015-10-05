@@ -1,5 +1,4 @@
 import mock
-from .support import unittest
 
 from pyramid.httpexceptions import HTTPUnauthorized
 from cliquet.cache.memory import Memory
@@ -7,6 +6,7 @@ from cliquet.tests.support import DummyRequest
 
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 from syncto.authentication import build_sync_client
+from syncto.tests.support import unittest
 
 
 class BuildSyncClientTest(unittest.TestCase):
@@ -57,7 +57,6 @@ class BuildSyncClientTest(unittest.TestCase):
                 build_sync_client(self.request)
                 SyncClient.assert_called_with(**self.credentials)
                 # Second time
-                self.request.headers[CLIENT_STATE_HEADER] = '6789'
                 build_sync_client(self.request)
                 # TokenServerClient should have been called only once.
                 TSClient.assert_called_once_with('1234', '12345')

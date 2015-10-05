@@ -1,3 +1,5 @@
+import json
+
 from pyramid import httpexceptions
 from pyramid.security import forget
 
@@ -6,6 +8,7 @@ from cliquet import utils
 from syncclient.client import SyncClient, TokenserverClient
 
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
+from syncto.crypto import encrypt, decrypt
 
 
 def build_sync_client(request):
@@ -45,15 +48,19 @@ def build_sync_client(request):
     cache_key = 'credentials_%s' % utils.hmac_digest(hmac_secret,
                                                      bid_assertion)
 
-    credentials = cache.get(cache_key)
+    encrypted_credentials = cache.get(cache_key)
 
-    if not credentials:
+    if not encrypted_credentials:
         ttl = int(settings['syncto.cache_credentials_ttl_seconds'])
         tokenserver = TokenserverClient(bid_assertion, client_state)
         if statsd:
             statsd.watch_execution_time(tokenserver, prefix="tokenserver")
         credentials = tokenserver.get_hawk_credentials(duration=ttl)
-        cache.set(cache_key, credentials, ttl)
+        encrypted = encrypt(json.dumps(credentials), client_state, hmac_secret)
+        cache.set(cache_key, encrypted, ttl)
+    else:
+        credentials = json.loads(
+            decrypt(encrypted_credentials, client_state, hmac_secret))
 
     if statsd:
         timer = statsd.timer("syncclient.start_time")

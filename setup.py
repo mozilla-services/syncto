@@ -15,7 +15,8 @@ with open(os.path.join(here, 'CHANGELOG.rst')) as f:
 REQUIREMENTS = [
     'waitress',
     'cliquet[postgresql,monitoring]',
-    'syncclient'
+    'syncclient',
+    'pynacl',
 ]
 
 if PY2:
