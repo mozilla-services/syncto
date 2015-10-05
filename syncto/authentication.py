@@ -1,5 +1,7 @@
 import json
+import time
 
+from browserid import utils as bid_utils
 from pyramid import httpexceptions
 from pyramid.security import forget
 
@@ -51,7 +53,10 @@ def build_sync_client(request):
     encrypted_credentials = cache.get(cache_key)
 
     if not encrypted_credentials:
-        ttl = int(settings['cache_credentials_ttl_seconds'])
+        settings_ttl = int(settings['cache_credentials_ttl_seconds'])
+        bid_ttl = _extract_ttl(bid_assertion)
+        ttl = min(settings_ttl, bid_ttl)
+
         tokenserver = TokenserverClient(bid_assertion, client_state)
         if statsd:
             statsd.watch_execution_time(tokenserver, prefix="tokenserver")
@@ -73,3 +78,17 @@ def build_sync_client(request):
         statsd.watch_execution_time(sync_client, prefix="syncclient")
 
     return sync_client
+
+
+def _extract_ttl(bid_assertion):
+    _, assertion = bid_utils.unbundle_certs_and_assertion(bid_assertion)
+    ttl = None
+    for fragment in assertion.split('.'):
+        try:
+            payload = json.loads(bid_utils.decode_bytes(fragment))
+        except ValueError:
+            pass
+        if 'exp' in payload:
+            exp = (payload['exp'] / 1000) - time.time()  # UTC
+            ttl = min(exp, ttl or exp)
+    return ttl
