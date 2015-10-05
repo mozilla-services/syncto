@@ -8,17 +8,8 @@ from six import text_type
 from six.moves import range
 
 
-def HKDF_extract(salt, IKM, hashmod=hashlib.sha256):
-    """HKDF-Extract; see RFC-5869 for the details."""
-    if isinstance(salt, text_type):
-        salt = salt.encode("utf-8")
-    return hmac.new(salt, IKM, hashmod).digest()
-
-
 def HKDF_expand(PRK, info, L, hashmod=hashlib.sha256):
     """HKDF-Expand; see RFC-5869 for the details."""
-    if isinstance(info, text_type):
-        info = info.encode("utf-8")
     digest_size = hashmod().digest_size
     N = int(math.ceil(L * 1.0 / digest_size))
     assert N <= 255
@@ -33,7 +24,16 @@ def HKDF_expand(PRK, info, L, hashmod=hashlib.sha256):
 
 def HKDF(secret, salt, info, size, hashmod=hashlib.sha256):
     """HKDF-extract-and-expand as a single function."""
-    PRK = HKDF_extract(salt, secret, hashmod)
+    if isinstance(secret, text_type):
+        secret = secret.encode("utf-8")
+
+    if isinstance(salt, text_type):
+        salt = salt.encode("utf-8")
+
+    if isinstance(info, text_type):
+        info = info.encode("utf-8")
+
+    PRK = hmac.new(salt, secret, hashmod).digest()
     return HKDF_expand(PRK, info, size, hashmod)
 
 

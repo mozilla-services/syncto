@@ -8,24 +8,15 @@ from syncto.tests.support import unittest
 
 
 class CryptoTest(unittest.TestCase):
-    def test_HKDF_extract_encode_salt_if_text_type(self):
-        PRK = crypto.HKDF_extract("Foobar", "IKM".encode('utf-8'))
-        self.assertIsInstance(PRK, binary_type)
-
-    def test_HKDF_extract_also_accept_salt_in_bytes(self):
-        PRK = crypto.HKDF_extract("Foobar".encode('utf-8'),
-                                  "IKM".encode('utf-8'))
-        self.assertIsInstance(PRK, binary_type)
-
-    def test_HKDF_expand_encode_info_if_text_type(self):
-        PRK = crypto.HKDF_extract("Foobar", "IKM".encode('utf-8'))
-        hkdf = crypto.HKDF_expand(PRK, "Foobar", 32)
+    def test_HKDF_encode_secret_salt_info_if_text_type(self):
+        hkdf = crypto.HKDF("Secret", "Salt", "Info", 32)
         self.assertIsInstance(hkdf, binary_type)
 
-    def test_HKDF_expand_also_accept_info_as_bytes(self):
-        PRK = crypto.HKDF_extract("Foobar", "IKM".encode('utf-8'))
-        hkdf = crypto.HKDF_expand(PRK, "Foobar".encode('utf-8'), 32)
-        self.assertIsInstance(hkdf, binary_type)
+    def test_HKDF_also_accept_secret_salt_info_in_bytes(self):
+        PRK = crypto.HKDF("Secret".encode('utf-8'),
+                          "Salt".encode('utf-8'),
+                          "Info".encode('utf-8'), 32)
+        self.assertIsInstance(PRK, binary_type)
 
     def test_HKDF_return_right_number_of_bytes(self):
         hkdf = crypto.HKDF("IKM".encode('utf-8'), "", "Foobar", 32)
