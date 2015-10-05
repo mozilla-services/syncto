@@ -1,9 +1,10 @@
 import mock
 import json
 
-from pyramid.httpexceptions import HTTPUnauthorized
 from cliquet.cache.memory import Memory
 from cliquet.tests.support import DummyRequest
+from nacl.exceptions import CryptoError
+from pyramid.httpexceptions import HTTPUnauthorized
 
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 from syncto.authentication import build_sync_client
@@ -63,7 +64,7 @@ class BuildSyncClientTest(unittest.TestCase):
                 TSClient.assert_called_once_with('1234', '12345')
                 SyncClient.assert_called_with(**self.credentials)
 
-    def test_should_cache_encrypted_credentials(self):
+    def test_credentials_should_be_cached_encrypted(self):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
                                 CLIENT_STATE_HEADER: '12345'}
         self.request.registry.cache.flush()
@@ -94,3 +95,15 @@ class BuildSyncClientTest(unittest.TestCase):
                     mocked_decrypt.assert_called_with(ENCRYPTED_CREDENTIALS,
                                                       '12345',
                                                       'This is not a secret')
+
+    def test_in_case_decryption_fails_it_should_raise(self):
+        self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
+                                CLIENT_STATE_HEADER: '12345'}
+        tempered_cache = ENCRYPTED_CREDENTIALS.replace('0', 'a')
+        with mock.patch('syncto.authentication.TokenserverClient') as TSClient:
+            TSClient.return_value.get_hawk_credentials.return_value = \
+                self.credentials
+            with mock.patch.object(
+                    self.request.registry.cache, 'get',
+                    return_value=tempered_cache):
+                self.assertRaises(CryptoError, build_sync_client, self.request)
