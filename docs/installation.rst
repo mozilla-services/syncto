@@ -20,6 +20,11 @@ By default, *Sycnto* persists internal cache in Redis.
     cd syncto
     make serve
 
+:note:
+   OSX users are warned that supplementary steps are needed to ensure proper
+   installation of cryptographic dependencies is properly done; see
+   :ref:`dedicated note <osx-install-warning>`.
+
 If you already installed Syncto earlier and you want to recreate a
 full environment (because of errors when running ``make serve``), please run::
 
@@ -110,6 +115,17 @@ Assuming `brew <http://brew.sh/>`_ is installed:
 ::
 
     brew install libffi openssl pkg-config
+
+.. _osx-install-warning:
+
+.. warning::
+
+   Apple having dropped support for OpenSSL and moving to their own library
+   recently, you have to force its usage to properly install cryptography-related
+   dependencies::
+
+       $ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" .venv/bin/pip install cryptography
+       $ make serve
 
 
 Running in production
