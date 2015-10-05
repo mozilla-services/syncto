@@ -59,7 +59,7 @@ class StatsdSyncClientTest(unittest.TestCase):
     def test_statsd_time_sync_client_calls(self):
         with mock.patch.object(
                 self.request.registry.cache, 'get',
-                return_value=ENCRYPTED_CREDENTIALS.decode('utf-8')):
+                return_value=ENCRYPTED_CREDENTIALS.encode('utf-8')):
             with mock.patch('requests.request'):
                 build_sync_client(self.request)
                 self.mocked_client.timer.assert_any_call(

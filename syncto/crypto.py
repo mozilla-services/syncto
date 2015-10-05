@@ -5,6 +5,7 @@ import math
 import nacl.secret
 import nacl.utils
 from six import text_type
+from six.moves import range
 
 
 def HKDF_extract(salt, IKM, hashmod=hashlib.sha256):
@@ -23,7 +24,7 @@ def HKDF_expand(PRK, info, L, hashmod=hashlib.sha256):
     assert N <= 255
     T = b""
     output = []
-    for i in xrange(1, N + 1):
+    for i in range(1, N + 1):
         data = T + info + chr(i).encode("utf-8")
         T = hmac.new(PRK, data, hashmod).digest()
         output.append(T)
@@ -49,7 +50,8 @@ def encrypt(message, client_state, hmac_secret):
     box = get_nacl_secret_box(client_state, hmac_secret)
     message_bytes = message.encode('utf-8')
     nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
-    return codecs.encode(box.encrypt(message_bytes, nonce), 'hex_codec')
+    return codecs.encode(box.encrypt(message_bytes, nonce),
+                         'hex_codec').decode('utf-8')
 
 
 def decrypt(encrypted, client_state, hmac_secret):
