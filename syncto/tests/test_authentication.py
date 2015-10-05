@@ -83,15 +83,14 @@ class BuildSyncClientTest(unittest.TestCase):
     def test_should_decrypt_credentials(self):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
                                 CLIENT_STATE_HEADER: '12345'}
-        encrypted_credentials = ENCRYPTED_CREDENTIALS.encode('utf-8')
         with mock.patch.object(
                 self.request.registry.cache, 'get',
-                return_value=encrypted_credentials):
+                return_value=ENCRYPTED_CREDENTIALS):
             with mock.patch('requests.request'):
                 with mock.patch('syncto.authentication.decrypt',
                                 return_value=json.dumps(self.credentials)) \
                         as mocked_decrypt:
                     build_sync_client(self.request)
-                    mocked_decrypt.assert_called_with(encrypted_credentials,
+                    mocked_decrypt.assert_called_with(ENCRYPTED_CREDENTIALS,
                                                       '12345',
                                                       'This is not a secret')
