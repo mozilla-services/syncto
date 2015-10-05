@@ -7,7 +7,7 @@ from cliquet.tests.support import DummyRequest
 
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 from syncto.authentication import build_sync_client
-from syncto.tests.support import unittest
+from syncto.tests.support import unittest, ENCRYPTED_CREDENTIALS
 
 
 @unittest.skipIf(not statsd.statsd_module, "statsd is not installed.")
@@ -49,8 +49,9 @@ class StatsdSyncClientTest(unittest.TestCase):
                     'tokenserver.tokenserverclient.get_hawk_credentials')
 
     def test_statsd_time_sync_client_calls(self):
-        with mock.patch.object(self.request.registry.cache, 'get',
-                               return_value=self.credentials):
+        with mock.patch.object(
+                self.request.registry.cache, 'get',
+                return_value=ENCRYPTED_CREDENTIALS.encode('utf-8')):
             with mock.patch('requests.request'):
                 build_sync_client(self.request)
                 self.mocked_client.timer.assert_any_call(

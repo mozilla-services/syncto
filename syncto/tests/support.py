@@ -8,6 +8,15 @@ from cliquet.tests import support as cliquet_support
 from syncto import main as testapp
 
 
+ENCRYPTED_CREDENTIALS = (
+    '6d4d20478dd81484aef640931d44787d24fc591382782f3aa724a77346dd4bbc22'
+    '6b84e42eaadf7f6baa6f1aefd6b60251abf11c1deb1a8f861b4955ce21c4b9979d'
+    '9585ca14e2f2581aa2bc3e80915743dacdb244e5f21a6dd8c054bc8826bbf9ca44'
+    '6344e1ccebe7f0c9953aaefd44600e9d21f98fc4cda2ed2c58db890a235ce6cdf8'
+    '640de4b2506c5b73fe6617bd2e90de64a01aee89306accae133e45e3e64818c426'
+)
+
+
 class BaseWebTest(object):
 
     def __init__(self, *args, **kwargs):
