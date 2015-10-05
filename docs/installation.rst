@@ -124,7 +124,9 @@ Assuming `brew <http://brew.sh/>`_ is installed:
    recently, you have to force its usage to properly install cryptography-related
    dependencies::
 
-       $ env LDFLAGS="-L$(brew --prefix openssl)/lib" CFLAGS="-I$(brew --prefix openssl)/include" .venv/bin/pip install cryptography
+       $ env LDFLAGS="-L$(brew --prefix openssl)/lib" \
+             CFLAGS="-I$(brew --prefix openssl)/include" \
+                 .venv/bin/pip install cryptography
        $ make serve
 
 
