@@ -44,14 +44,14 @@ def build_sync_client(request):
     cache = request.registry.cache
     statsd = request.registry.statsd
 
-    hmac_secret = settings['syncto.cache_hmac_secret']
+    hmac_secret = settings['cache_hmac_secret']
     cache_key = 'credentials_%s' % utils.hmac_digest(hmac_secret,
                                                      bid_assertion)
 
     encrypted_credentials = cache.get(cache_key)
 
     if not encrypted_credentials:
-        ttl = int(settings['syncto.cache_credentials_ttl_seconds'])
+        ttl = int(settings['cache_credentials_ttl_seconds'])
         tokenserver = TokenserverClient(bid_assertion, client_state)
         if statsd:
             statsd.watch_execution_time(tokenserver, prefix="tokenserver")
