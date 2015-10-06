@@ -1,7 +1,7 @@
+import base64
 import json
 import time
 
-from browserid import utils as bid_utils
 from pyramid import httpexceptions
 from pyramid.security import forget
 
@@ -80,14 +80,31 @@ def build_sync_client(request):
     return sync_client
 
 
+def base64url_decode(value):
+    """Pad base64 value with == and decode from base64 using URL-safe
+    alphabet substitutions.
+    """
+    rem = len(value) % 4
+    if rem > 0:
+        value += b'=' * (4 - rem)
+    try:
+        return base64.urlsafe_b64decode(value)
+    except TypeError as e:
+        raise ValueError(str(e))
+
+
 def _extract_ttl(bid_assertion):
-    _, assertion = bid_utils.unbundle_certs_and_assertion(bid_assertion)
+    """A BrowserID assertion is a list of base64 blocks separated with ``.``.
+    Return the smallest ttl from the JSON block that contain an expiration
+    timestamp.
+    """
     ttl = None
-    for fragment in assertion.split('.'):
+    for fragment in bid_assertion.split('.'):
         try:
-            payload = json.loads(bid_utils.decode_bytes(fragment))
+            decoded_fragment = base64url_decode(fragment)
+            payload = json.loads(decoded_fragment)
         except ValueError:
-            pass
+            payload = {}
         if 'exp' in payload:
             exp = (payload['exp'] / 1000) - time.time()  # UTC
             ttl = min(exp, ttl or exp)
