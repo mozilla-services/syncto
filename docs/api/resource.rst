@@ -72,17 +72,17 @@ and ``If-None-Match`` headers (see :ref:`section about timestamps <server-timest
     {
         "data": [
             {
-                "id": "VLkOS7iT5C94", 
-                "last_modified": 1441868927070, 
-                "payload": "{\"ciphertext\":\"Wf2AoZiOly...\",\"IV\":\"jW7JFPf...\",\"hmac\":\"989352d9b5e0c6...\"}", 
+                "id": "VLkOS7iT5C94",
+                "last_modified": 1441868927070,
+                "payload": "{\"ciphertext\":\"Wf2AoZiOly...\",\"IV\":\"jW7JFPf...\",\"hmac\":\"989352d9b5e0c6...\"}",
                 "sortindex": -1
-            }, 
+            },
             {
-                "id": "qYYobAN_p9vS", 
-                "last_modified": 1441868927070, 
-                "payload": "{\"ciphertext\":\"3upjoLrO...7\",\"IV\":\"3O/nPq82xUT...\",\"hmac\":\"addce0f9d3024ed9fd0042b...\"}", 
+                "id": "qYYobAN_p9vS",
+                "last_modified": 1441868927070,
+                "payload": "{\"ciphertext\":\"3upjoLrO...7\",\"IV\":\"3O/nPq82xUT...\",\"hmac\":\"addce0f9d3024ed9fd0042b...\"}",
                 "sortindex": 100
-            }, 
+            },
     		...
         ]
     }
@@ -117,7 +117,7 @@ Counting
 
 Contrary to what Kinto does, the ``Total-Records`` only contains the
 number of records in the current request
-`for now <https://github.com/mozilla-services/syncto/issues/43>`_. 
+`for now <https://github.com/mozilla-services/syncto/issues/43>`_.
 
 You may ask the request without the ``_limit`` parameter to get all
 the records at once.
@@ -194,9 +194,9 @@ changed meanwhile, a ``304 Not Modified`` is returned.
 
     {
         "data": {
-            "id": "d2X1O6-DyeFS", 
-            "last_modified": 1441868927070, 
-            "payload": "{\"ciphertext\":\"75IcW3P4WxUJipehWryevc+ygK5vojh3n...\",\"IV\":\"Sj3U2Nkk2IjE...\",\"hmac\":\"c6a530f348...b68b610351\"}", 
+            "id": "d2X1O6-DyeFS",
+            "last_modified": 1441868927070,
+            "payload": "{\"ciphertext\":\"75IcW3P4WxUJipehWryevc+ygK5vojh3n...\",\"IV\":\"Sj3U2Nkk2IjE...\",\"hmac\":\"c6a530f348...b68b610351\"}",
             "sortindex": 2000
         }
     }
