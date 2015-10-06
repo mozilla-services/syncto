@@ -4,11 +4,11 @@ API Endpoints
 .. _api-endpoints:
 
 .. toctree::
-   authentication
+
    resource
-   batch
-   utilities
-   timestamps
-   versionning
-   backoff
-   errors
+   cliquet/versioning
+   cliquet/batch
+   cliquet/timestamps
+   cliquet/backoff
+   cliquet/errors
+   cliquet/deprecation
