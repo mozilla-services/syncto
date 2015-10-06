@@ -109,7 +109,7 @@ class BuildSyncClientTest(unittest.TestCase):
                 self.assertRaises(CryptoError, build_sync_client, self.request)
 
     def test_base64url_decode_raises_ValueError_in_case_of_problem(self):
-        self.assertRaises(ValueError, base64url_decode, 'A')
+        self.assertRaises(ValueError, base64url_decode, u'A')
 
     def test_uses_ttl_from_settings_if_assertion_is_in_old_format(self):
         # This assertion comes from PyBrowserID tests cases.

@@ -1,9 +1,11 @@
 import base64
+import binascii
 import json
 import time
 
 from pyramid import httpexceptions
 from pyramid.security import forget
+from six import text_type
 
 from cliquet.errors import http_error, ERRORS
 from cliquet import utils
@@ -84,12 +86,14 @@ def base64url_decode(value):
     """Pad base64 value with == and decode from base64 using URL-safe
     alphabet substitutions.
     """
+    if isinstance(value, text_type):
+        value = value.encode('utf-8')
     rem = len(value) % 4
     if rem > 0:
         value += b'=' * (4 - rem)
     try:
-        return base64.urlsafe_b64decode(value)
-    except TypeError as e:
+        return base64.urlsafe_b64decode(value).decode('utf-8')
+    except (binascii.Error, TypeError) as e:
         raise ValueError(str(e))
 
 
