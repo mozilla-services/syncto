@@ -7,7 +7,7 @@ from nacl.exceptions import CryptoError
 from pyramid.httpexceptions import HTTPUnauthorized
 
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
-from syncto.authentication import build_sync_client
+from syncto.authentication import build_sync_client, base64url_decode
 from syncto.tests.support import unittest, ENCRYPTED_CREDENTIALS
 
 
@@ -108,7 +108,10 @@ class BuildSyncClientTest(unittest.TestCase):
                     return_value=tempered_cache):
                 self.assertRaises(CryptoError, build_sync_client, self.request)
 
-    def test_uses_ttl_from_settings_if_assertion_has_no_expiration(self):
+    def test_base64url_decode_raises_ValueError_in_case_of_problem(self):
+        self.assertRaises(ValueError, base64url_decode, 'A')
+
+    def test_uses_ttl_from_settings_if_assertion_is_in_old_format(self):
         # This assertion comes from PyBrowserID tests cases.
         # https://github.com/mozilla/PyBrowserID
         assertion = """

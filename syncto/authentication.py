@@ -54,7 +54,7 @@ def build_sync_client(request):
 
     if not encrypted_credentials:
         settings_ttl = int(settings['cache_credentials_ttl_seconds'])
-        bid_ttl = _extract_ttl(bid_assertion)
+        bid_ttl = _extract_bid_assertion_ttl(bid_assertion)
         ttl = min(settings_ttl, bid_ttl or settings_ttl)
 
         tokenserver = TokenserverClient(bid_assertion, client_state)
@@ -93,7 +93,7 @@ def base64url_decode(value):
         raise ValueError(str(e))
 
 
-def _extract_ttl(bid_assertion):
+def _extract_bid_assertion_ttl(bid_assertion):
     """A BrowserID assertion is a list of base64 blocks separated with ``.``.
     Return the smallest ttl from the JSON block that contain an expiration
     timestamp.
