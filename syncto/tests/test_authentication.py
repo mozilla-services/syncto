@@ -16,8 +16,8 @@ class BuildSyncClientTest(unittest.TestCase):
     def setUp(self):
         self.request = DummyRequest()
         self.request.registry.settings.update({
-            'syncto.cache_hmac_secret': 'This is not a secret',
-            'syncto.cache_credentials_ttl_seconds': 300})
+            'cache_hmac_secret': 'This is not a secret',
+            'cache_credentials_ttl_seconds': 300})
 
         self.request.registry.cache = Memory()
 
