@@ -18,6 +18,8 @@ AUTHORIZATION_HEADER = 'Authorization'
 CLIENT_STATE_HEADER = 'X-Client-State'
 
 DEFAULT_SETTINGS = {
+    'project_name': 'syncto',
+    'project_docs': 'https://syncto.readthedocs.org/',
     'cache_hmac_secret': None,
     'cache_credentials_ttl_seconds': 300
 }
