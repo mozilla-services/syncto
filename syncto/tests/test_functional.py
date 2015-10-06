@@ -23,13 +23,13 @@ RECORD_EXAMPLE = {
 
 class SettingsMissingTest(unittest.TestCase):
     MANDATORY_SETTINGS = {
-        'syncto.cache_hmac_secret': 'This is not a secret'
+        'cache_hmac_secret': 'This is not a secret'
     }
 
     def test_syncto_cache_hmac_secret_missing(self):
         settings = self.MANDATORY_SETTINGS.copy()
         # Remove the mandatory setting we want to test
-        del settings['syncto.cache_hmac_secret']
+        del settings['cache_hmac_secret']
         self.assertRaises(ValueError, testapp, {}, **settings)
 
 
@@ -163,8 +163,8 @@ class BaseViewTest(BaseWebTest, unittest.TestCase):
 
     def get_app_settings(self, extra=None):
         settings = super(BaseViewTest, self).get_app_settings(extra)
-        settings['syncto.record_tabs_put_enabled'] = True
-        settings['syncto.record_tabs_delete_enabled'] = True
+        settings['record_tabs_put_enabled'] = True
+        settings['record_tabs_delete_enabled'] = True
         return settings
 
 

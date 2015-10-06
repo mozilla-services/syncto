@@ -18,15 +18,15 @@ AUTHORIZATION_HEADER = 'Authorization'
 CLIENT_STATE_HEADER = 'X-Client-State'
 
 DEFAULT_SETTINGS = {
-    'syncto.cache_hmac_secret': None,
-    'syncto.cache_credentials_ttl_seconds': 300
+    'cache_hmac_secret': None,
+    'cache_credentials_ttl_seconds': 300
 }
 
 
 def main(global_config, **settings):
     config = Configurator(settings=settings)
 
-    if 'syncto.cache_hmac_secret' not in settings:
+    if 'cache_hmac_secret' not in settings:
         raise ValueError(
             "Please configure the `syncto.cache_hmac_secret` settings.")
 
