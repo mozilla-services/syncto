@@ -55,7 +55,7 @@ def build_sync_client(request):
     if not encrypted_credentials:
         settings_ttl = int(settings['cache_credentials_ttl_seconds'])
         bid_ttl = _extract_ttl(bid_assertion)
-        ttl = min(settings_ttl, bid_ttl)
+        ttl = min(settings_ttl, bid_ttl or settings_ttl)
 
         tokenserver = TokenserverClient(bid_assertion, client_state)
         if statsd:
