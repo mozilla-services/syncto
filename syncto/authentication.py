@@ -1,7 +1,11 @@
+import base64
+import binascii
 import json
+import time
 
 from pyramid import httpexceptions
 from pyramid.security import forget
+from six import text_type
 
 from cliquet.errors import http_error, ERRORS
 from cliquet import utils
@@ -51,7 +55,10 @@ def build_sync_client(request):
     encrypted_credentials = cache.get(cache_key)
 
     if not encrypted_credentials:
-        ttl = int(settings['cache_credentials_ttl_seconds'])
+        settings_ttl = int(settings['cache_credentials_ttl_seconds'])
+        bid_ttl = _extract_bid_assertion_ttl(bid_assertion)
+        ttl = min(settings_ttl, bid_ttl or settings_ttl)
+
         tokenserver = TokenserverClient(bid_assertion, client_state)
         if statsd:
             statsd.watch_execution_time(tokenserver, prefix="tokenserver")
@@ -73,3 +80,36 @@ def build_sync_client(request):
         statsd.watch_execution_time(sync_client, prefix="syncclient")
 
     return sync_client
+
+
+def base64url_decode(value):
+    """Pad base64 value with == and decode from base64 using URL-safe
+    alphabet substitutions.
+    """
+    if isinstance(value, text_type):
+        value = value.encode('utf-8')
+    rem = len(value) % 4
+    if rem > 0:
+        value += b'=' * (4 - rem)
+    try:
+        return base64.urlsafe_b64decode(value).decode('utf-8')
+    except (binascii.Error, TypeError) as e:
+        raise ValueError(str(e))
+
+
+def _extract_bid_assertion_ttl(bid_assertion):
+    """A BrowserID assertion is a list of base64 blocks separated with ``.``.
+    Return the smallest ttl from the JSON block that contain an expiration
+    timestamp.
+    """
+    ttl = None
+    for fragment in bid_assertion.split('.'):
+        try:
+            decoded_fragment = base64url_decode(fragment)
+            payload = json.loads(decoded_fragment)
+        except ValueError:
+            payload = {}
+        if 'exp' in payload:
+            exp = (payload['exp'] / 1000) - time.time()  # UTC
+            ttl = min(exp, ttl or exp)
+    return ttl
