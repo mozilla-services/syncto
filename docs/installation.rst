@@ -129,11 +129,14 @@ However, the set of settings mentionned below might deserve some review or adjus
     syncto.retry_after_seconds = 30
     syncto.batch_max_requests = 25
     syncto.cache_hmac_secret = <32 random bytes as hex>
+    syncto.token_server_url = https://token.services.mozilla.com/
 
 :note:
 
     For an exhaustive list of available settings and their default values,
-    refer to `cliquet source code <https://github.com/mozilla-services/cliquet/blob/2.7.0/cliquet/__init__.py#L26-L83>`_.
+    refer to `cliquet source code <https://github.com/mozilla-services/cliquet/blob/2.8.0/cliquet/__init__.py#L26-L83>`_.
+
+     Click here for `Syncto specific settings <https://github.com/mozilla-services/syncto/blob/master/syncto/__init__.py#L20-L25>`_
 
 
 Enable write access
