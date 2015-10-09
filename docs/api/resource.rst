@@ -4,8 +4,8 @@
 Resource endpoints
 ##################
 
-GET /buckets/syncto/collections/{collection}/records
-====================================================
+Get a list of records for a collection
+======================================
 
 **Requires authentication**
 
@@ -45,52 +45,63 @@ For cache and concurrency control, an ``ETag`` response header gives the
 value that consumers can provide in subsequent requests using ``If-Match``
 and ``If-None-Match`` headers (see :ref:`the section about timestamps <server-timestamps>`).
 
-**Request**:
-
-.. code-block:: http
-
-    $ BID_AUDIENCE=https://token.services.mozilla.com/ BID_WITH_CLIENT_STATE=True \
-        http GET https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records \
-            --auth-type fxa-browserid --auth "user@email.com:P4S5W0RD" -v
-
-    GET /v1/buckets/syncto/collections/history/records HTTP/1.1
-    Authorization: BrowserID eyJhbGciOiJSUzI1NiJ9...FHGg
-    Host: syncto.dev.mozaws.net
-    User-Agent: HTTPie/0.9.2
-    X-Client-State: 64e8bc35e90806f9a67c0ef8fef63...
 
 
-**Response**:
+.. http:get:: /buckets/syncto/collections/(collection_id)/records
 
-.. code-block:: http
+    **Example request**:
 
-    HTTP/1.1 200 OK
-    Access-Control-Expose-Headers: Content-Length, Quota-Remaining, Alert, \
-        Retry-After, Last-Modified, Total-Records, ETag, Backoff, Next-Page
-    Content-Length: 1680
-    Content-Type: application/json; charset=UTF-8
-    Date: Tue, 06 Oct 2015 13:57:24 GMT
-    ETag: "1442849064460"
-    Last-Modified: Mon, 21 Sep 2015 15:24:24 GMT
-    Total-Records: 6
+    .. sourcecode:: http
 
-    {
-        "data": [
-            {
-                "id": "VLkOS7iT5C94",
-                "last_modified": 1441868927070,
-                "payload": "{\"ciphertext\":\"Wf2AoZiOly...\",\"IV\":\"jW7JFPf...\",\"hmac\":\"989352d9b5e0c6...\"}",
-                "sortindex": -1
-            },
-            {
-                "id": "qYYobAN_p9vS",
-                "last_modified": 1441868927070,
-                "payload": "{\"ciphertext\":\"3upjoLrO...7\",\"IV\":\"3O/nPq82xUT...\",\"hmac\":\"addce0f9d3024ed9fd0042b...\"}",
-                "sortindex": 100
-            },
-    		...
-        ]
-    }
+        $ BID_AUDIENCE=https://token.services.mozilla.com/ BID_WITH_CLIENT_STATE=True \
+            http GET https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records \
+                --auth-type fxa-browserid --auth "user@email.com:P4S5W0RD" -v
+
+        GET /v1/buckets/syncto/collections/history/records HTTP/1.1
+        Authorization: BrowserID eyJhbGciOiJSUzI1NiJ9...FHGg
+        Host: syncto.dev.mozaws.net
+        User-Agent: HTTPie/0.9.2
+        X-Client-State: 64e8bc35e90806f9a67c0ef8fef63...
+
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Access-Control-Expose-Headers: Content-Length, Quota-Remaining, Alert, \
+            Retry-After, Last-Modified, Total-Records, ETag, Backoff, Next-Page
+        Content-Length: 1680
+        Content-Type: application/json; charset=UTF-8
+        Date: Tue, 06 Oct 2015 13:57:24 GMT
+        ETag: "1442849064460"
+        Last-Modified: Mon, 21 Sep 2015 15:24:24 GMT
+        Total-Records: 6
+
+        {
+            "data": [
+                {
+                    "id": "VLkOS7iT5C94",
+                    "last_modified": 1441868927070,
+                    "payload": "{\"ciphertext\":\"Wf2AoZiOly...\",\"IV\":\"jW7JFPf...\",\"hmac\":\"989352d9b5e0c6...\"}",
+                    "sortindex": -1
+                },
+                {
+                    "id": "qYYobAN_p9vS",
+                    "last_modified": 1441868927070,
+                    "payload": "{\"ciphertext\":\"3upjoLrO...7\",\"IV\":\"3O/nPq82xUT...\",\"hmac\":\"addce0f9d3024ed9fd0042b...\"}",
+                    "sortindex": 100
+                },
+                ...
+            ]
+        }
+
+    :statuscode 200: The request was processed.
+    :statuscode 304: The collection did not change since value in ``If-None-Match`` header
+    :statuscode 400: The request querystring is invalid
+    :statuscode 401: Something went wrong with your authentication
+    :statuscode 412: Collection changed since value in ``If-Match`` header
+
 
 
 Filtering and Sorting
@@ -147,17 +158,8 @@ but is passed through if present in Firefox Sync responses.
 Its value is in Kilobyte (KB).
 
 
-HTTP Status Codes
------------------
-
-* ``200 OK``: The request was processed
-* ``304 Not Modified``: Collection did not change since value in ``If-None-Match`` header
-* ``400 Bad Request``: The request querystring is invalid
-* ``412 Precondition Failed``: Collection changed since value in ``If-Match`` header
-
-
-GET /buckets/syncto/collections/{collection}/records/{record_id}
-================================================================
+Get a collection record
+=======================
 
 **Requires authentication**
 
@@ -175,53 +177,53 @@ encoded in urlsafe base64 (``+`` and ``/`` are replaced with ``-`` and
 If the request header ``If-None-Match`` is provided, and if the record has not
 changed meanwhile, a ``304 Not Modified`` is returned.
 
-**Request**:
 
-.. code-block:: http
+.. http:get:: /buckets/syncto/collections/(collection_id)/records/(record_id)
 
-    $ http GET \
-        https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS \
-        Authorization:"BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ" \
-        X-Client-State:64e8bc35e90806f9a67c0ef8fef63...
+    **Example request**:
 
-    GET /v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS HTTP/1.1
-    Authorization: BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ
-    Host: syncto.dev.mozaws.net
-    User-Agent: HTTPie/0.9.2
-    X-Client-State: 64e8bc35e90806f9a67c0ef8fef63...
+    .. sourcecode:: http
 
-**Response**:
+        $ http GET \
+            https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS \
+            Authorization:"BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ" \
+            X-Client-State:64e8bc35e90806f9a67c0ef8fef63...
 
-.. code-block:: http
+        GET /v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS HTTP/1.1
+        Authorization: BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ
+        Host: syncto.dev.mozaws.net
+        User-Agent: HTTPie/0.9.2
+        X-Client-State: 64e8bc35e90806f9a67c0ef8fef63...
 
-    HTTP/1.1 200 OK
-    Access-Control-Expose-Headers: Content-Length, Alert, Retry-After, Last-Modified, ETag, Backoff
-    Content-Length: 289
-    Content-Type: application/json; charset=UTF-8
-    Date: Tue, 06 Oct 2015 14:18:40 GMT
-    ETag: "1441868927070"
-    Last-Modified: Thu, 10 Sep 2015 07:08:47 GMT
+    **Example response**:
 
-    {
-        "data": {
-            "id": "d2X1O6-DyeFS",
-            "last_modified": 1441868927070,
-            "payload": "{\"ciphertext\":\"75IcW3P4WxUJipehWryevc+ygK5vojh3n...\",\"IV\":\"Sj3U2Nkk2IjE...\",\"hmac\":\"c6a530f348...b68b610351\"}",
-            "sortindex": 2000
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Access-Control-Expose-Headers: Content-Length, Alert, Retry-After, Last-Modified, ETag, Backoff
+        Content-Length: 289
+        Content-Type: application/json; charset=UTF-8
+        Date: Tue, 06 Oct 2015 14:18:40 GMT
+        ETag: "1441868927070"
+        Last-Modified: Thu, 10 Sep 2015 07:08:47 GMT
+
+        {
+            "data": {
+                "id": "d2X1O6-DyeFS",
+                "last_modified": 1441868927070,
+                "payload": "{\"ciphertext\":\"75IcW3P4WxUJipehWryevc+ygK5vojh3n...\",\"IV\":\"Sj3U2Nkk2IjE...\",\"hmac\":\"c6a530f348...b68b610351\"}",
+                "sortindex": 2000
+            }
         }
-    }
+
+    :statuscode 200: The request was processed.
+    :statuscode 304: The collection did not change since value in ``If-None-Match`` header
+    :statuscode 401: Something went wrong with your authentication
+    :statuscode 412: Collection changed since value in ``If-Match`` header
 
 
-HTTP Status Code
-----------------
-
-* ``200 OK``: The request was processed
-* ``304 Not Modified``: Record did not change since value in ``If-None-Match`` header
-* ``412 Precondition Failed``: Record changed since value in ``If-Match`` header
-
-
-DELETE /buckets/syncto/collections/{collection}/records/{record_id}
-===================================================================
+Delete a record
+===============
 
 **Requires authentication**
 
@@ -239,16 +241,40 @@ By default this endpoint is deactivated and should be activated on a
 per collection basis.
 
 
-HTTP Status Code
-----------------
+.. http:delete:: /buckets/syncto/collections/(collection_id)/records/(record_id)
 
-* ``200 OK``: The record was deleted
-* ``405 Method Not Allowed``: This endpoint is not available;
-* ``412 Precondition Failed``: Record changed since value in ``If-Match`` header
+    **Example request**:
+
+    .. sourcecode:: http
+
+        $ http DELETE \
+            https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS \
+            Authorization:"BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ" \
+            X-Client-State:64e8bc35e90806f9a67c0ef8fef63...
+
+        DELETE /v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS HTTP/1.1
+        Authorization: BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ
+        Host: syncto.dev.mozaws.net
+        User-Agent: HTTPie/0.9.2
+        X-Client-State: 64e8bc35e90806f9a67c0ef8fef63...
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+        HTTP/1.1 204 No Content
+        Access-Control-Expose-Headers: Content-Length, Alert, Retry-After, Last-Modified, ETag, Backoff
+        Content-Length: 0
+        Date: Tue, 06 Oct 2015 14:18:40 GMT
+
+    :statuscode 204: The record was deleted
+    :statuscode 401: Something went wrong with your authentication
+    :statuscode 405: This endpoint was not activated in the configuration
+    :statuscode 412: Collection changed since value in ``If-Match`` header
 
 
-PUT /buckets/syncto/collections/{collection}/records/{record_id}
-================================================================
+Create or Update a record
+=========================
 
 **Requires authentication**
 
@@ -275,11 +301,63 @@ There are no validation nor on the id format nor on the payload body.
 By default this endpoint is deactivated and should be activated on a
 per collection basis.
 
+.. http:put:: /buckets/syncto/collections/(collection_id)/records/(record_id)
 
-HTTP Status Codes
------------------
+    **Example request**:
 
-* ``201 Created``: The record was created;
-* ``200 OK``: The record was updated;
-* ``405 Method Not Allowed``: This endpoint is not available;
-* ``412 Precondition Failed``: Collection changed since value in ``If-Match`` header
+    .. sourcecode:: http
+
+        $ echo '{
+             "data": {
+                 "payload": "{\"ciphertext\":\"75IcW3P4WxUJipehWryevc+ygK5vojh3nOadu7YSX9zJSm3eBHu5lNIg1UtDyt3b\",\"IV\":\"Sj3U2Nkk2IjE2S59hv0m7Q==\",\"hmac\":\"c6a530f3486142d1069f80bfaff907e0cc077a892cf7f9bd62f943b68b610351\"}", 
+                 "sortindex": 2000
+             }
+         }' | http PUT \
+            https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS \
+            Authorization:"BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ" \
+            X-Client-State:64e8bc35e90806f9a67c0ef8fef63...
+
+        PUT /v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS HTTP/1.1
+        Authorization: BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ
+        Content-Length: 275
+        Content-Type: application/json
+        Host: syncto.dev.mozaws.net
+        User-Agent: HTTPie/0.9.2
+        X-Client-State: 64e8bc35e90806f9a67c0ef8fef63...
+
+        {
+            "data": {
+                "payload": "{\"ciphertext\":\"75IcW3P4WxUJipehWryevc+ygK5vojh3nOadu7YSX9zJSm3eBHu5lNIg1UtDyt3b\",\"IV\":\"Sj3U2Nkk2IjE2S59hv0m7Q==\",\"hmac\":\"c6a530f3486142d1069f80bfaff907e0cc077a892cf7f9bd62f943b68b610351\"}",
+                "sortindex": 2000
+            }
+        }
+
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Access-Control-Expose-Headers: Content-Length, Alert, Retry-After, Last-Modified, ETag, Backoff
+        Connection: keep-alive
+        Content-Length: 289
+        Content-Type: application/json; charset=UTF-8
+        Date: Fri, 09 Oct 2015 10:04:13 GMT
+        ETag: "1444385059190"
+        Last-Modified: Fri, 09 Oct 2015 10:04:19 GMT
+
+        {
+            "data": {
+                "id": "d2X1O6-DyeFS",
+                "last_modified": 1444385059190,
+                "payload": "{\"ciphertext\":\"75IcW3P4WxUJipehWryevc+ygK5vojh3nOadu7YSX9zJSm3eBHu5lNIg1UtDyt3b\",\"IV\":\"Sj3U2Nkk2IjE2S59hv0m7Q==\",\"hmac\":\"c6a530f3486142d1069f80bfaff907e0cc077a892cf7f9bd62f943b68b610351\"}",
+                "sortindex": 2000
+            }
+        }
+
+
+    :statuscode 200: The record was created or updated
+    :statuscode 400: The request body is invalid
+    :statuscode 401: Something went wrong with your authentication
+    :statuscode 405: This endpoint was not activated in the configuration
+    :statuscode 412: Collection changed since value in ``If-Match`` header

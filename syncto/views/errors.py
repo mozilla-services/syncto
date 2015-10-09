@@ -41,6 +41,11 @@ def response_error(context, request):
             response = http_error(httpexceptions.HTTPNotFound(),
                                   errno=ERRORS.INVALID_RESOURCE_ID,
                                   message=message)
+        elif context.response.status_code == 412:
+            message = 'Resource was modified meanwhile'
+            response = http_error(httpexceptions.HTTPPreconditionFailed(),
+                                  errno=ERRORS.MODIFIED_MEANWHILE,
+                                  message=message)
         else:
             response = service_unavailable(
                 httpexceptions.HTTPServiceUnavailable(),

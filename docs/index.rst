@@ -10,6 +10,7 @@ Table of content
    overview
    installation
    api/index
+   headers
    troubleshooting
    contributing
    changelog
