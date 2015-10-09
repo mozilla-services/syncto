@@ -244,6 +244,13 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
             "tabs", full=True, limit='2', offset='12345', sort='index',
             headers={})
 
+    def test_collection_handle_oldest_sort(self):
+        self.app.get(COLLECTION_URL,
+                     params={'_sort': 'oldest'},
+                     headers=self.headers, status=200)
+        self.sync_client.return_value.get_records.assert_called_with(
+            "tabs", full=True, sort='oldest', headers={})
+
     def test_collection_raises_with_invalid_sort_parameter(self):
         resp = self.app.get(COLLECTION_URL,
                             params={'_sort': 'unknown'},
@@ -252,7 +259,7 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
         self.assertFormattedError(
             resp, 400, ERRORS.INVALID_PARAMETERS, "Invalid parameters",
             "_sort should be one of ('-last_modified', 'newest', "
-            "'-sortindex', 'index')")
+            "'-sortindex', 'index', 'last_modified', 'oldest')")
 
     def test_collection_can_validate_a_list_of_specified_ids(self):
         self.app.get(COLLECTION_URL,

@@ -46,9 +46,12 @@ def collection_get(request):
         elif request.GET['_sort'] in ('-sortindex', 'index'):
             params['sort'] = 'index'
 
+        elif request.GET['_sort'] in ('last_modified', 'oldest'):
+            params['sort'] = 'oldest'
+
         else:
             error_msg = ("_sort should be one of ('-last_modified', 'newest', "
-                         "'-sortindex', 'index')")
+                         "'-sortindex', 'index', 'last_modified', 'oldest')")
             raise_invalid(request,
                           location="querystring",
                           name="_sort",
