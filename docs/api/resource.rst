@@ -36,18 +36,22 @@ The returned value is a JSON mapping containing:
 - ``data``: the list of records, with exhaustive fields;
 
 A ``Total-Records`` response header indicates the total number of records
-of the collection.
+in the collection.
 
-A ``Last-Modified`` response header provides a human-readable (rounded to second)
-of the current collection timestamp.
+A ``Last-Modified`` response header provides a human-readable (rounded
+to second) version of the current collection timestamp.
 
 For cache and concurrency control, an ``ETag`` response header gives the
 value that consumers can provide in subsequent requests using ``If-Match``
-and ``If-None-Match`` headers (see :ref:`section about timestamps <server-timestamps>`).
+and ``If-None-Match`` headers (see :ref:`the section about timestamps <server-timestamps>`).
 
 **Request**:
 
 .. code-block:: http
+
+    $ BID_AUDIENCE=https://token.services.mozilla.com/ BID_WITH_CLIENT_STATE=True \
+        http GET https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records \
+            --auth-type fxa-browserid --auth "user@email.com:P4S5W0RD" -v
 
     GET /v1/buckets/syncto/collections/history/records HTTP/1.1
     Authorization: BrowserID eyJhbGciOiJSUzI1NiJ9...FHGg
@@ -61,7 +65,8 @@ and ``If-None-Match`` headers (see :ref:`section about timestamps <server-timest
 .. code-block:: http
 
     HTTP/1.1 200 OK
-    Access-Control-Expose-Headers: Content-Length, Quota-Remaining, Alert, Retry-After, Last-Modified, Total-Records, ETag, Backoff, Next-Page
+    Access-Control-Expose-Headers: Content-Length, Quota-Remaining, Alert, \
+        Retry-After, Last-Modified, Total-Records, ETag, Backoff, Next-Page
     Content-Length: 1680
     Content-Type: application/json; charset=UTF-8
     Date: Tue, 06 Oct 2015 13:57:24 GMT
@@ -91,12 +96,11 @@ and ``If-None-Match`` headers (see :ref:`section about timestamps <server-timest
 Filtering and Sorting
 ---------------------
 
-Filtering properties of the Firefox Sync protocol are exposed as well
-as the one needed by Kinto clients.
+Firefox Sync filtering options are exposed in syncto.
 
 - ``_since`` with the ETag value to fetch changes from the previous
   time.
-- ``_sort`` can be either ``newest`` or ``index`` or ``-last_modified`` and ``-sortindex``.
+- ``_sort`` can be either ``newest`` or ``index`` (as well as ``-last_modified`` and ``-sortindex``).
 - ``_limit`` to limit the number of items per pages (no limit by default).
 - ``ids`` to define the list of requested records.
 
@@ -104,19 +108,19 @@ as the one needed by Kinto clients.
 Pagination
 ----------
 
-The ``Next-Page`` header will be sent to you with the URL to fetch the
-next page. It will include defined ``_limit`` and ``_token`` values
+The ``Next-Page`` header will be sent with the URL to fetch the next
+page. It will include defined ``_limit`` and ``_token`` values
 automatically.
 
-When the ``Next-Page`` is not present, it means that you fetched
-everything already.
+When the ``Next-Page`` is not present, it means there is no more data
+to fetch.
 
 
 Counting
 --------
 
-Contrary to what Kinto does, the ``Total-Records`` only contains the
-number of records in the current request
+Contrary to what Kinto does, the ``Total-Records`` only counts the
+number of records contained in the current request
 `for now <https://github.com/mozilla-services/syncto/issues/43>`_.
 
 You may ask the request without the ``_limit`` parameter to get all
@@ -127,6 +131,7 @@ Polling for changes
 -------------------
 
 The ``_since`` parameter is provided as an alias for ``gt_last_modified``.
+(Greater than ``last_modified``)
 
 If the request header ``If-None-Match`` is provided as described in
 the :ref:`section about timestamps <server-timestamps>` and if the
@@ -139,7 +144,7 @@ Additionnal headers
 The ``Quota-Remaining`` header is not part of the Kinto protocol yet
 but is passed through if present in Firefox Sync responses.
 
-Its value is in kB.
+Its value is in Kilobyte (KB).
 
 
 HTTP Status Codes
@@ -173,6 +178,11 @@ changed meanwhile, a ``304 Not Modified`` is returned.
 **Request**:
 
 .. code-block:: http
+
+    $ http GET \
+        https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS \
+        Authorization:"BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ" \
+        X-Client-State:64e8bc35e90806f9a67c0ef8fef63...
 
     GET /v1/buckets/syncto/collections/history/records/d2X1O6-DyeFS HTTP/1.1
     Authorization: BrowserID eyJhbGciOiJSUzI1NiJ9...i_dQ
