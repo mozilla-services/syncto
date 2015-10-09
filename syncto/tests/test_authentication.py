@@ -17,7 +17,8 @@ class BuildSyncClientTest(unittest.TestCase):
         self.request = DummyRequest()
         self.request.registry.settings.update({
             'cache_hmac_secret': 'This is not a secret',
-            'cache_credentials_ttl_seconds': 300})
+            'cache_credentials_ttl_seconds': 300,
+            'token_server_url': 'https://token.services.mozilla.com/'})
 
         self.request.registry.cache = Memory()
 
@@ -44,7 +45,8 @@ class BuildSyncClientTest(unittest.TestCase):
                 self.credentials
             with mock.patch('syncto.authentication.SyncClient') as SyncClient:
                 build_sync_client(self.request)
-                TSClient.assert_called_with('1234', '12345')
+                TSClient.assert_called_with(
+                    '1234', '12345', 'https://token.services.mozilla.com/')
                 SyncClient.assert_called_with(**self.credentials)
 
     def test_should_cache_credentials_the_second_time(self):
@@ -61,7 +63,8 @@ class BuildSyncClientTest(unittest.TestCase):
                 # Second time
                 build_sync_client(self.request)
                 # TokenServerClient should have been called only once.
-                TSClient.assert_called_once_with('1234', '12345')
+                TSClient.assert_called_once_with(
+                    '1234', '12345', 'https://token.services.mozilla.com/')
                 SyncClient.assert_called_with(**self.credentials)
 
     def test_credentials_should_be_cached_encrypted(self):

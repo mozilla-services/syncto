@@ -2,6 +2,7 @@ import pkg_resources
 
 import cliquet
 from pyramid.config import Configurator
+from syncto.heartbeat import get_token_server_ping
 
 # Module version, as defined in PEP-0396.
 __version__ = pkg_resources.get_distribution(__package__).version
@@ -21,7 +22,9 @@ DEFAULT_SETTINGS = {
     'project_name': 'syncto',
     'project_docs': 'https://syncto.readthedocs.org/',
     'cache_hmac_secret': None,
-    'cache_credentials_ttl_seconds': 300
+    'cache_credentials_ttl_seconds': 300,
+    'token_server_url': 'https://token.services.mozilla.com/',
+    'token_server_heartbeat_timeout_seconds': 5,
 }
 
 
@@ -32,6 +35,9 @@ def main(global_config, **settings):
                        default_settings=DEFAULT_SETTINGS)
 
     settings = config.get_settings()
+    config.registry.heartbeats['sync'] = get_token_server_ping(
+        settings['token_server_url'],
+        settings['token_server_heartbeat_timeout_seconds'])
 
     if settings['cache_hmac_secret'] is None:
         error_msg = "Please configure the `syncto.cache_hmac_secret` settings."

@@ -23,7 +23,8 @@ class StatsdSyncClientTest(unittest.TestCase):
         self.request = DummyRequest()
         self.request.registry.settings.update({
             'cache_hmac_secret': 'This is not a secret',
-            'cache_credentials_ttl_seconds': 300})
+            'cache_credentials_ttl_seconds': 300,
+            'token_server_url': 'https://token.services.mozilla.com/'})
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
                                 CLIENT_STATE_HEADER: '12345'}
 
