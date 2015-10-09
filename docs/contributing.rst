@@ -22,16 +22,6 @@ Run tests
     make tests
 
 
-Run load tests
-==============
-
-From the :file:`loadtests` folder:
-
-::
-
-    make test SERVER_URL=http://localhost:8000
-
-
 IRC channel
 ===========
 

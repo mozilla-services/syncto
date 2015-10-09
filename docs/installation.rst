@@ -5,14 +5,15 @@ Installation
 Run locally
 ===========
 
-*Sycnto* is based on top of the `cliquet <https://cliquet.readthedocs.org>`_ project, and
-as such, please refer to cliquet's documentation for more details.
+*Syncto* is based on top of the `cliquet <https://cliquet.readthedocs.org>`_
+project, and as such, you may wanto to refer to
+`cliquet's documentation <https://cliquet.readthedocs.org/>`_ for more details.
 
 
 For development
 ---------------
 
-By default, *Sycnto* persists internal cache in Redis.
+By default, *Syncto* persists internal cache in Redis.
 
 ::
 
@@ -34,63 +35,40 @@ full environment (because of errors when running ``make serve``), please run::
 Authentication
 --------------
 
-By default, *Sycnto* relies on Firefox Account OAuth2 Bearer tokens to authenticate
-users.
+*Syncto* relies on Firefox Account BrowserID assertion to authenticate
+users to the Token Server.
 
-See `cliquet documentation <https://cliquet.readthedocs.org/en/latest/configuration.html#authentication>`_
-to configure authentication options.
+Note that you will need to pass through a BrowserID assertion with the
+https://token.services.mozilla.com/ audience for Syncto to be able to
+read Firefox Sync server credentials.
 
-Note that you will also need to pass through a BrowserID assertion in
-order for Syncto to read the Firefox Sync server.
+This can be made using `HTTPie <http://httpie.org/>`_ and
+`PyFxA <https://pypi.python.org/pypi/PyFxA/>`_.
 
+To install them:
 
-Install and setup PostgreSQL
-============================
+.. code-block:: bash
 
- (*requires PostgreSQL 9.3 or higher*).
+    $ pip install httpie PyFxA
 
+To build a Firefox Account Browser ID assertion for an existing user:
 
-Using Docker
-------------
+.. code-block:: http
 
-::
-
-    docker run -e POSTGRES_PASSWORD=postgres -p 5434:5432 postgres
-
-
-Linux
------
-
-On debian / ubuntu based systems:
-
-::
-
-    apt-get install postgresql postgresql-contrib
+    $ BID_AUDIENCE=https://token.services.mozilla.com/ \
+        BID_WITH_CLIENT_STATE=True \
+          http GET 'https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records'
+            --auth-type fxa-browserid --auth "user@email.com:US3R_P4S5W0RD" -v
 
 
-By default, the ``postgres`` user has no password and can hence only connect
-if ran by the ``postgres`` system user. The following command will assign it:
+Once you have got a BrowserID Assertion, you can also reuse it to
+benefit from Syncto cache features:
 
-::
+.. code-block:: http
 
-    sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-
-
-OS X
-----
-
-Assuming `brew <http://brew.sh/>`_ is installed:
-
-::
-
-    brew update
-    brew install postgresql
-
-Create the initial database:
-
-::
-
-    initdb /usr/local/var/postgres
+    $ http GET 'https://syncto.dev.mozaws.net/v1/buckets/syncto/collections/history/records' \
+        Authorization:"BrowserID eyJhbGciOiJSUzI1NiJ9..." \
+        X-Client-State:64e8bc35e90806f9a67c0ef8fef63...
 
 
 Cryptography libraries
@@ -133,6 +111,8 @@ Assuming `brew <http://brew.sh/>`_ is installed:
 Running in production
 =====================
 
+.. _configuration:
+
 Recommended settings
 --------------------
 
@@ -142,18 +122,18 @@ However, the set of settings mentionned below might deserve some review or adjus
 
 .. code-block :: ini
 
-    cliquet.http_scheme = https
-    cliquet.paginate_by = 100
-    cliquet.batch_max_requests = 25
-    cliquet.delete_collection_enabled = false
-    cliquet.storage_pool_maxconn = 50
-    cliquet.cache_pool_maxconn = 50
-    fxa-oauth.cache_ttl_seconds = 3600
+    syncto.cache_backend = cliquet.cache.redis
+    syncto.cache_url = redis://localhost:6379/1
+    syncto.http_scheme = https
+    syncto.http_host = <hostname>
+    syncto.retry_after_seconds = 30
+    syncto.batch_max_requests = 25
+    syncto.cache_hmac_secret = <32 random bytes as hex>
 
 :note:
 
     For an exhaustive list of available settings and their default values,
-    refer to `cliquet source code <https://github.com/mozilla-services/cliquet/blob/2.3.1/cliquet/__init__.py#L26-L78>`_.
+    refer to `cliquet source code <https://github.com/mozilla-services/cliquet/blob/2.7.0/cliquet/__init__.py#L26-L83>`_.
 
 
 Enable write access
@@ -181,10 +161,10 @@ Monitoring
 .. code-block :: ini
 
     # Heka
-    cliquet.logging_renderer = cliquet.logs.MozillaHekaRenderer
+    syncto.logging_renderer = cliquet.logs.MozillaHekaRenderer
 
     # StatsD
-    cliquet.statsd_url = udp://carbon.server:8125
+    syncto.statsd_url = udp://carbon.server:8125
 
 Application output should go to ``stdout``, and message format should have no
 prefix string:
@@ -245,32 +225,6 @@ Adapt the logging configuration in order to plug Sentry:
     datefmt = %H:%M:%S
 
 
-PostgreSQL setup
-----------------
-
-In production, it is wise to run the application with a dedicated database and
-user.
-
-::
-
-    postgres=# CREATE USER produser;
-    postgres=# CREATE DATABASE proddb OWNER produser;
-    CREATE DATABASE
-
-
-The tables needs to be created with the `cliquet` tool.
-
-.. code-block :: bash
-
-    $ cliquet --ini config/syncto.ini migrate
-
-:note:
-
-    Alternatively the SQL initialization files can be found in the
-    *cliquet* source code (``cliquet/cache/postgresql/schemal.sql`` and
-    ``cliquet/storage/postgresql/schemal.sql``).
-
-
 Running with uWsgi
 ------------------
 
@@ -289,17 +243,26 @@ Here's an example:
     [uwsgi]
     wsgi-file = app.wsgi
     enable-threads = true
-    http-socket = 127.0.0.1:8000
-    processes =  3
+    socket = /run/uwsgi/syncto.sock
+    chmod-socket = 666
+    cheaper-algo = busyness
+    cheaper = 5
+    cheaper-initial = 9
+    workers = 14
+    cheaper-step = 1
+    cheaper-overload = 30
+    cheaper-busyness-verbose = true
     master = true
     module = syncto
-    harakiri = 30
-    uid = syncto
-    gid = syncto
-    virtualenv = .
+    harakiri = 120
+    uid = ubuntu
+    gid = ubuntu
+    virtualenv = /data/venvs/syncto
     lazy = true
     lazy-apps = true
-
+    single-interpreter = true
+    buffer-size = 65535
+    post-buffering = 65535
 
 To use a different ini file, the ``SYNCTO_INI`` environment variable
-should be present with a path to it.
+should be present with a path set to it.

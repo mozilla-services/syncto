@@ -389,6 +389,14 @@ class RecordTest(BaseViewTest):
         self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
                           headers=self.headers, status=404)
 
+    def test_put_return_a_412_in_case_of_failed_precondition_resource(self):
+        response = mock.MagicMock()
+        response.status_code = 412
+        self.sync_client.return_value.put_record.side_effect = HTTPError(
+            response=response)
+        self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
+                          headers=self.headers, status=412)
+
     def test_get_return_a_307_in_case_of_not_modified_resource(self):
         response = mock.MagicMock()
         response.status_code = 304

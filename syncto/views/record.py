@@ -77,6 +77,9 @@ def record_put(request):
     record = request.validated['data']
     record['id'] = sync_id
 
+    # Remove read-only fields
+    record.pop('last_modified', None)
+
     sync_client = build_sync_client(request)
     last_modified = sync_client.put_record(collection_name, record,
                                            headers=headers)

@@ -6,4 +6,5 @@
 .coverage
 .tox/
 docs/_build/
+docs/api/cliquet/
 .cache/
