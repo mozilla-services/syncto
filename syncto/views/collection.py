@@ -67,5 +67,8 @@ def collection_get(request):
     # Configure headers
     export_headers(sync_client.raw_resp, request)
 
+    if '_limit' in request.GET and 'Total-Records' in request.response.headers:
+        del request.response.headers['Total-Records']
+
     if records:
         return {'data': records}

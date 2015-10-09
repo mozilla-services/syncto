@@ -270,6 +270,12 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
         self.assertEquals(resp.headers['Next-Page'], next_page)
         self.assertEquals(resp.headers['Quota-Remaining'], '125')
 
+    def test_collection_does_not_return_Total_Records_when_paginating(self):
+        resp = self.app.get(COLLECTION_URL+'?_limit=2',
+                            headers=self.headers, status=200)
+        self.assertNotIn('Total-Records', resp.headers)
+        self.assertIn('Next-Page', resp.headers)
+
     def test_collection_return_a_307_in_case_of_not_modified_resource(self):
         response = mock.MagicMock()
         response.status_code = 304
