@@ -16,8 +16,8 @@ Syncto
     :target: https://coveralls.io/r/mozilla-services/syncto
 
 Syncto is a server allowing you to store and retrieve Firefox Sync
-user data attached to your Firefox account using the Kinto API in
-order to be able to use Kinto.js for that task.
+user data attached to your Firefox account using a subset of the Kinto
+API in order to be able to use Kinto.js for that task.
 
 * `Online documentation <http://syncto.readthedocs.org/en/latest/>`_
 * `Issue tracker <https://github.com/mozilla-services/syncto/issues>`_
