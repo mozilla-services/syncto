@@ -244,7 +244,7 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
             "tabs", full=True, limit='2', offset='12345', sort='index',
             headers={})
 
-    def test_collection_handle_oldest_sort(self):
+    def test_collection_handles_oldest_sort(self):
         self.app.get(COLLECTION_URL,
                      params={'_sort': 'oldest'},
                      headers=self.headers, status=200)
