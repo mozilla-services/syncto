@@ -7,6 +7,7 @@ from cliquet.tests.support import FormattedErrorMixin
 from requests.exceptions import HTTPError, ConnectionError
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 from syncto import main as testapp
+from syncto.heartbeat import ping_sync_cluster
 
 from .support import BaseWebTest, unittest
 
@@ -431,3 +432,31 @@ class WriteSafeguardTest(FormattedErrorMixin, BaseViewTest):
         self.assertFormattedError(
             resp, 405, ERRORS.METHOD_NOT_ALLOWED, 'Method Not Allowed',
             'Endpoint disabled for this collection in configuration.')
+
+
+class HeartBeatTest(unittest.TestCase):
+
+    def test_heartbeat_return_false_if_token_server_outofservice(self):
+        with mock.patch('syncto.heartbeat.requests.get') as mocked_request:
+            mocked_request.return_value.raise_for_status.side_effect = (
+                HTTPError())
+            request = mock.MagicMock()
+            request.registry.settings = {
+                'token_server_url': 'https://example.com',
+                'token_server_heartbeat_timeout_seconds': 5
+            }
+            self.assertFalse(ping_sync_cluster(request))
+            mocked_request.assert_called_with(
+                'https://example.com/__heartbeat__', timeout=5)
+
+    def test_heartbeat_return_true_if_token_server_is_working(self):
+        with mock.patch('syncto.heartbeat.requests.get') as mocked_request:
+            mocked_request.return_value.raise_for_status.return_value = None
+            request = mock.MagicMock()
+            request.registry.settings = {
+                'token_server_url': 'https://example.com',
+                'token_server_heartbeat_timeout_seconds': 5
+            }
+            self.assertTrue(ping_sync_cluster(request))
+            mocked_request.assert_called_with(
+                'https://example.com/__heartbeat__', timeout=5)

@@ -47,6 +47,7 @@ def build_sync_client(request):
     settings = request.registry.settings
     cache = request.registry.cache
     statsd = request.registry.statsd
+    token_server_url = settings['token_server_url']
 
     hmac_secret = settings['cache_hmac_secret']
     cache_key = 'credentials_%s' % utils.hmac_digest(hmac_secret,
@@ -59,7 +60,8 @@ def build_sync_client(request):
         bid_ttl = _extract_bid_assertion_ttl(bid_assertion)
         ttl = min(settings_ttl, bid_ttl or settings_ttl)
 
-        tokenserver = TokenserverClient(bid_assertion, client_state)
+        tokenserver = TokenserverClient(bid_assertion, client_state,
+                                        token_server_url)
         if statsd:
             statsd.watch_execution_time(tokenserver, prefix="tokenserver")
         credentials = tokenserver.get_hawk_credentials(duration=ttl)
