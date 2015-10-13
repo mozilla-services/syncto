@@ -103,21 +103,30 @@ class StatsdHTTPErrorStatusCodeTest(StatsdTestMixin, unittest.TestCase):
     def test_response_error_counts_401_in_statsd(self):
         response = mock.MagicMock()
         response.status_code = 401
-        response_error(HTTPError(response=response), self.request)
+        try:
+            raise HTTPError(response=response)
+        except HTTPError as e:
+            response_error(e, self.request)
         self.mocked_client.incr.assert_called_with(
             "syncclient.status_code.401", count=1)
 
     def test_response_error_counts_403_in_statsd(self):
         response = mock.MagicMock()
         response.status_code = 403
-        response_error(HTTPError(response=response), self.request)
+        try:
+            raise HTTPError(response=response)
+        except HTTPError as e:
+            response_error(e, self.request)
         self.mocked_client.incr.assert_called_with(
             "syncclient.status_code.403", count=1)
 
     def test_response_error_counts_404_in_statsd(self):
         response = mock.MagicMock()
         response.status_code = 404
-        response_error(HTTPError(response=response), self.request)
+        try:
+            raise HTTPError(response=response)
+        except HTTPError as e:
+            response_error(e, self.request)
         self.mocked_client.incr.assert_called_with(
             "syncclient.status_code.404", count=1)
 
