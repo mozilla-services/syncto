@@ -54,9 +54,9 @@ def collection_get(request):
                           name="_sort",
                           description=error_msg)
 
-    if 'ids' in request.GET:
+    if 'in_ids' in request.GET:
         params['ids'] = [record_id.strip() for record_id in
-                         request.GET['ids'].split(',') if record_id]
+                         request.GET['in_ids'].split(',') if record_id]
 
     records = sync_client.get_records(collection_name, full=True,
                                       headers=headers, **params)

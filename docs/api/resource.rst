@@ -113,7 +113,7 @@ Firefox Sync filtering options are exposed in syncto.
   time.
 - ``_sort`` can be either ``newest`` or ``index`` (as well as ``-last_modified`` and ``-sortindex``).
 - ``_limit`` to limit the number of items per pages (no limit by default).
-- ``ids`` to define the list of requested records.
+- ``in_ids`` to define the list of requested records IDs.
 
 
 Pagination

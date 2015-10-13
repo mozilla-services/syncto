@@ -256,7 +256,7 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
 
     def test_collection_can_validate_a_list_of_specified_ids(self):
         self.app.get(COLLECTION_URL,
-                     params={'ids': '123,456,789'},
+                     params={'in_ids': '123,456,789'},
                      headers=self.headers, status=200)
 
     def test_collection_correctly_converts_sync_headers(self):
