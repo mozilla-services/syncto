@@ -35,6 +35,13 @@ class SettingsMissingTest(unittest.TestCase):
 
 class ErrorsTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
+    def test_public_settings_are_shown_in_view_prefixed_with_cliquet(self):
+        response = self.app.get('/')
+        settings = response.json['settings']
+        expected = {'batch_max_requests': 25,
+                    'cliquet.batch_max_requests': 25}
+        self.assertEqual(expected, settings)
+
     def test_authorization_header_is_required_for_collection(self):
         resp = self.app.get(COLLECTION_URL, headers=self.headers, status=401)
 
