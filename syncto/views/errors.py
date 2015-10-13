@@ -24,6 +24,10 @@ def response_error(context, request):
         statsd.count("syncclient.status_code.%s" %
                      context.response.status_code)
 
+    if context.response.status_code in (400, 401, 403, 404):
+        # For this code we also want to log the info about the error.
+        logger.info(context, exc_info=True)
+
     # For this specific code we do not want to log the error.
     if context.response.status_code == 304:
         response = httpexceptions.HTTPNotModified()
