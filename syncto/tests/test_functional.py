@@ -280,6 +280,14 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
         resp = self.app.get(COLLECTION_URL, headers=self.headers, status=304)
         self.assertEqual(resp.body, b'')
 
+    def test_collection_correctly_generate_next_page_header(self):
+        resp = self.app.get(COLLECTION_URL+'?_limit=2&sort=index',
+                            headers=self.headers, status=200)
+        self.assertIn('Next-Page', resp.headers)
+        next_page = ('http://localhost/v1' + COLLECTION_URL +
+                     '?_limit=2&sort=index&_token=12345')
+        self.assertEquals(resp.headers['Next-Page'], next_page)
+
 
 class RecordTest(BaseViewTest):
 
