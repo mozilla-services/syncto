@@ -34,6 +34,9 @@ def main(global_config, **settings):
     cliquet.initialize(config, __version__, 'syncto',
                        default_settings=DEFAULT_SETTINGS)
 
+    # Retro-compatibility with first Kinto clients.
+    config.registry.public_settings.add('cliquet.batch_max_requests')
+
     settings = config.get_settings()
     config.registry.heartbeats['sync'] = ping_sync_cluster
 
