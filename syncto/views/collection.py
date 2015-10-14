@@ -64,6 +64,10 @@ def collection_get(request):
     records = sync_client.get_records(collection_name, full=True,
                                       headers=headers, **params)
 
+    statsd = request.registry.statsd
+    if statsd:
+        statsd.count("syncclient.status_code.200")
+
     for r in records:
         r['last_modified'] = int(r.pop('modified') * 1000)
 
