@@ -4,10 +4,17 @@ CHANGELOG
 This document describes changes between each past release.
 
 
-1.1.0 (unreleased)
+1.1.0 (2015-10-14)
 ------------------
 
-- Nothing changed yet.
+- Do not install postgresql dependencies by default.
+- Add statsd metrics on SyncClient response status_code. (#49)
+- Handle the new Firefox Sync sort=oldest parameter. (#46)
+- Rename ids to in_ids to reflect the Kinto protocol. (#50)
+- Make sure Next-Page header keeps QueryString parameters. (#47)
+- Add a Token server heartbeat. (#44)
+- Remove the not accurate Total-Records header when paginating. (#43)
+- Expose the now deprecated cliquet.batch_max_requests settings. (#48)
 
 
 1.0.0 (2015-10-06)
