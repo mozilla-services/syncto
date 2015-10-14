@@ -4,10 +4,16 @@ CHANGELOG
 This document describes changes between each past release.
 
 
-1.1.0 (unreleased)
+1.1.0 (2015-10-14)
 ------------------
 
-- Nothing changed yet.
+- Do not install postgresql dependencies by default.
+- Add statsd metrics on SyncClient response status_code.
+- Handle the new Firefox Sync sort=oldest parameter.
+- Rename ids to in_ids to cope with Kinto protocol.
+- Make sure Next-Page header keeps QueryString parameters.
+- Add a Token server heartbeat.
+- Remove the not accurate Total-Records when paginating.
 
 
 1.0.0 (2015-10-06)
