@@ -49,6 +49,8 @@ def export_headers(sync_raw_response, current_request):
     syncto_response = current_request.response
     headers = syncto_response.headers
 
+    headers['Cache-Control'] = 'no-cache'
+
     if 'X-Last-Modified' in response_headers:
         last_modified = float(response_headers['X-Last-Modified'])
         headers['ETag'] = '"%s"' % int(last_modified * 1000)
