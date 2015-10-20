@@ -274,6 +274,12 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
                      params={'in_ids': '123,456,789'},
                      headers=self.headers, status=200)
 
+    def test_collection_returns_empty_list(self):
+        self.sync_client.return_value.get_records.return_value = []
+        resp = self.app.get(COLLECTION_URL,
+                            headers=self.headers, status=200)
+        self.assertEquals(len(resp.json['data']), 0)
+
     def test_collection_correctly_converts_sync_headers(self):
         resp = self.app.get(COLLECTION_URL,
                             headers=self.headers, status=200)
