@@ -185,6 +185,11 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
                             headers=self.headers, status=200)
         self.assertIn('Access-Control-Allow-Origin', resp.headers)
 
+    def test_collection_handle_cache_control_headers(self):
+        resp = self.app.get(COLLECTION_URL,
+                            headers=self.headers, status=200)
+        self.assertIn('Cache-Control', resp.headers)
+
     def test_collection_handle_since_parameter(self):
         self.app.get(COLLECTION_URL,
                      params={'_since': '14377478425700',
@@ -321,6 +326,10 @@ class RecordTest(BaseViewTest):
     def test_record_handle_cors_headers(self):
         resp = self.app.get(RECORD_URL, headers=self.headers, status=200)
         self.assertIn('Access-Control-Allow-Origin', resp.headers)
+
+    def test_record_handle_cache_control_headers(self):
+        resp = self.app.get(RECORD_URL, headers=self.headers, status=200)
+        self.assertIn('Cache-Control', resp.headers)
 
     def test_can_delete_record(self):
         self.sync_client.return_value.delete_record.return_value = None
