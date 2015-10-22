@@ -7,3 +7,4 @@ requests
 nose
 nose-cov
 nose-mocha-reporter
+https://github.com/mozilla-services/cliquet/archive/master.zip
