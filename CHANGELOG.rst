@@ -4,10 +4,11 @@ CHANGELOG
 This document describes changes between each past release.
 
 
-1.2.0 (unreleased)
+1.2.0 (2015-10-22)
 ------------------
 
-- Nothing changed yet.
+- Send ``Cache-Control: no-cache`` header (#54)
+- Make sure collection_list return an empty list (#56)
 
 
 1.1.0 (2015-10-14)
