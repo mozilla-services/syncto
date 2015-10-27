@@ -45,7 +45,7 @@ def build_sync_client(request):
         else:
             client_state = request.headers[CLIENT_STATE_HEADER]
     elif len(bucket_id) != 32:
-        msg = "The provided bucket ID is not correct."
+        msg = "The provided bucket ID is incorrect."
         response = http_error(httpexceptions.HTTPUnauthorized(),
                               errno=ERRORS.MISSING_AUTH_TOKEN,
                               message=msg)
@@ -56,8 +56,8 @@ def build_sync_client(request):
 
     if is_client_state_header_defined:
         send_alert(request,
-                   "%s headers is deprecated and should not be provided." %
-                   CLIENT_STATE_HEADER)
+                   "%s headers is deprecated and should not be "
+                   "provided anymore." % CLIENT_STATE_HEADER)
 
     authorization_header = request.headers[AUTHORIZATION_HEADER]
     bid_assertion = authorization_header.split(" ", 1)[1]

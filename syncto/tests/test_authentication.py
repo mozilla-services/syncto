@@ -16,6 +16,7 @@ class BuildSyncClientTest(unittest.TestCase):
     def setUp(self):
         self.request = DummyRequest()
         self.request.registry.settings.update({
+            'project_docs': 'https://syncto.readthedocs.org/',
             'cache_hmac_secret': 'This is not a secret',
             'cache_credentials_ttl_seconds': 300,
             'token_server_url': 'https://token.services.mozilla.com/'})
@@ -38,8 +39,27 @@ class BuildSyncClientTest(unittest.TestCase):
     def test_should_raise_if_authorization_header_is_missing(self):
         self.assertRaises(HTTPUnauthorized, build_sync_client, self.request)
 
-    def test_should_raise_if_client_state_header_is_missing(self):
+    def test_should_raise_if_client_state_header_is_missing_with_syncto(self):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234'}
+        self.assertRaises(HTTPUnauthorized, build_sync_client, self.request)
+
+    def test_should_not_raise_if_client_state_in_url(self):
+        request = self.request
+        request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234'}
+        request.matchdict['bucket_id'] = '601c4497372419ee1789bf931f8c68f5'
+        with mock.patch('syncto.authentication.TokenserverClient') as TSClient:
+            TSClient.return_value.get_hawk_credentials.return_value = \
+                self.credentials
+            with mock.patch('syncto.authentication.SyncClient') as SyncClient:
+                build_sync_client(request)
+                TSClient.assert_called_with(
+                    '1234', '601c4497372419ee1789bf931f8c68f5',
+                    'https://token.services.mozilla.com/')
+                SyncClient.assert_called_with(**self.credentials)
+
+    def test_should_raise_if_client_state_is_url_is_wrong(self):
+        self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234'}
+        self.request.matchdict['bucket_id'] = '12345'
         self.assertRaises(HTTPUnauthorized, build_sync_client, self.request)
 
     def test_should_return_the_client_if_everything_is_fine(self):
@@ -53,6 +73,21 @@ class BuildSyncClientTest(unittest.TestCase):
                 TSClient.assert_called_with(
                     '1234', '12345', 'https://token.services.mozilla.com/')
                 SyncClient.assert_called_with(**self.credentials)
+
+    def test_should_return_an_alert_if_client_state_header_is_used(self):
+        self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
+                                CLIENT_STATE_HEADER: '12345'}
+        with mock.patch('syncto.authentication.TokenserverClient') as TSClient:
+            TSClient.return_value.get_hawk_credentials.return_value = \
+                self.credentials
+            with mock.patch('syncto.authentication.SyncClient'):
+                build_sync_client(self.request)
+                self.assertIn('Alert', self.request.response.headers)
+                self.assertEqual(
+                    self.request.response.headers['Alert'],
+                    '{"url":"https:\\/\\/syncto.readthedocs.org\\/",'
+                    '"message":"X-Client-State headers is deprecated '
+                    'and should not be provided anymore.","code":"soft-eol"}')
 
     def test_should_cache_credentials_the_second_time(self):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
