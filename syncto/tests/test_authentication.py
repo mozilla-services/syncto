@@ -22,6 +22,11 @@ class BuildSyncClientTest(unittest.TestCase):
 
         self.request.registry.cache = Memory()
 
+        self.request.matchdict = {
+            'bucket_id': 'syncto',
+            'collection_name': 'tabs'
+        }
+
         self.credentials = {
             "api_endpoint": "http://example.org/",
             "uid": "123456",

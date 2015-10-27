@@ -7,7 +7,7 @@ from pyramid import httpexceptions
 from pyramid.security import forget
 from six import text_type
 
-from cliquet.errors import http_error, ERRORS
+from cliquet.errors import http_error, ERRORS, send_alert
 from cliquet import utils
 from syncclient.client import SyncClient, TokenserverClient
 
@@ -31,18 +31,36 @@ def build_sync_client(request):
         response.headers.extend(forget(request))
         raise response
 
-    is_client_state_defined = CLIENT_STATE_HEADER in request.headers
-    if not is_client_state_defined:
-        msg = "Provide the tokenserver %s header." % CLIENT_STATE_HEADER
+    bucket_id = request.matchdict['bucket_id']
+    is_client_state_header_defined = CLIENT_STATE_HEADER in request.headers
+
+    if bucket_id == 'syncto':
+        if not is_client_state_header_defined:
+            msg = "Provide the tokenserver %s header." % CLIENT_STATE_HEADER
+            response = http_error(httpexceptions.HTTPUnauthorized(),
+                                  errno=ERRORS.MISSING_AUTH_TOKEN,
+                                  message=msg)
+            response.headers.extend(forget(request))
+            raise response
+        else:
+            client_state = request.headers[CLIENT_STATE_HEADER]
+    elif len(bucket_id) != 32:
+        msg = "The provided bucket ID is not correct."
         response = http_error(httpexceptions.HTTPUnauthorized(),
                               errno=ERRORS.MISSING_AUTH_TOKEN,
                               message=msg)
         response.headers.extend(forget(request))
         raise response
+    else:
+        client_state = bucket_id
+
+    if is_client_state_header_defined:
+        send_alert(request,
+                   "%s headers is deprecated and should not be provided." %
+                   CLIENT_STATE_HEADER)
 
     authorization_header = request.headers[AUTHORIZATION_HEADER]
     bid_assertion = authorization_header.split(" ", 1)[1]
-    client_state = request.headers[CLIENT_STATE_HEADER]
 
     settings = request.registry.settings
     cache = request.registry.cache

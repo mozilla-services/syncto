@@ -9,7 +9,7 @@ from syncto.headers import import_headers, export_headers
 
 collection = Service(name='collection',
                      description='Firefox Sync Collection service',
-                     path=('/buckets/syncto/collections'
+                     path=('/buckets/{bucket_id}/collections'
                            '/{collection_name}/records'),
                      cors_headers=('Next-Page', 'Total-Records',
                                    'Last-Modified', 'ETag', 'Quota-Remaining'))

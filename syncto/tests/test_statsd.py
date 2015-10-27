@@ -24,6 +24,10 @@ class StatsdTestMixin(object):
         self.addCleanup(p.stop)
 
         self.request = DummyRequest()
+        self.request.matchdict = {
+            'bucket_id': 'syncto',
+            'collection_name': 'tabs'
+        }
         self.request.registry.settings.update({
             'cache_hmac_secret': 'This is not a secret',
             'cache_credentials_ttl_seconds': 300,
