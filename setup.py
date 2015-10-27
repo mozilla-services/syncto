@@ -33,7 +33,7 @@ ENTRY_POINTS = {
     ]}
 
 setup(name='syncto',
-      version='1.3.0.dev0',
+      version='1.3.0',
       description='Read Firefox Sync server using Kinto API.',
       long_description=README + "\n\n" + CHANGELOG,
       license='Apache License (2.0)',
