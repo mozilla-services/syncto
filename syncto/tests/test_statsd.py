@@ -1,7 +1,7 @@
 import mock
 
 from cliquet import statsd
-from cliquet.cache.memory import Memory
+from cliquet.cache.memory import Cache
 from cliquet.tests.support import DummyRequest
 from requests.exceptions import HTTPError
 
@@ -36,7 +36,7 @@ class StatsdTestMixin(object):
                                 CLIENT_STATE_HEADER: '12345'}
         self.request.response.headers = {'Content-Type': 'application/json'}
 
-        self.request.registry.cache = Memory()
+        self.request.registry.cache = Cache()
         self.request.registry.cache.flush()
         self.request.registry.statsd = self.client
 

@@ -1,7 +1,7 @@
 import mock
 import json
 
-from cliquet.cache.memory import Memory
+from cliquet.cache.memory import Cache
 from cliquet.tests.support import DummyRequest
 from nacl.exceptions import CryptoError
 from pyramid.httpexceptions import HTTPUnauthorized
@@ -21,7 +21,7 @@ class BuildSyncClientTest(unittest.TestCase):
             'cache_credentials_ttl_seconds': 300,
             'token_server_url': 'https://token.services.mozilla.com/'})
 
-        self.request.registry.cache = Memory()
+        self.request.registry.cache = Cache()
 
         self.request.matchdict = {
             'bucket_id': 'syncto',
