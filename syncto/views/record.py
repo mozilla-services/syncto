@@ -41,7 +41,7 @@ def assert_endpoint_enabled(request, collection_name):
 
 record = Service(name='record',
                  description='Firefox Sync Collection Record service',
-                 path=('/buckets/syncto/collections/'
+                 path=('/buckets/{bucket_id}/collections/'
                        '{collection_name}/records/{record_id}'),
                  cors_headers=('Last-Modified', 'ETag'))
 

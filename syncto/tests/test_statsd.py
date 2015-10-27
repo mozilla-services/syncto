@@ -1,7 +1,7 @@
 import mock
 
 from cliquet import statsd
-from cliquet.cache.memory import Memory
+from cliquet.cache.memory import Cache
 from cliquet.tests.support import DummyRequest
 from requests.exceptions import HTTPError
 
@@ -24,6 +24,10 @@ class StatsdTestMixin(object):
         self.addCleanup(p.stop)
 
         self.request = DummyRequest()
+        self.request.matchdict = {
+            'bucket_id': 'syncto',
+            'collection_name': 'tabs'
+        }
         self.request.registry.settings.update({
             'cache_hmac_secret': 'This is not a secret',
             'cache_credentials_ttl_seconds': 300,
@@ -32,7 +36,7 @@ class StatsdTestMixin(object):
                                 CLIENT_STATE_HEADER: '12345'}
         self.request.response.headers = {'Content-Type': 'application/json'}
 
-        self.request.registry.cache = Memory()
+        self.request.registry.cache = Cache()
         self.request.registry.cache.flush()
         self.request.registry.statsd = self.client
 
