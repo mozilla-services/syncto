@@ -8,7 +8,11 @@ This document describes changes between each past release.
 ------------------
 
 - Upgraded to *Cliquet* 2.9.0
-- Put the Client-State as bucket_id in the URL (#62)
+
+**Protocol**
+
+- Client-state id should now be provided through the bucket id in the
+  URL (#62)
 
 
 1.2.0 (2015-10-22)
