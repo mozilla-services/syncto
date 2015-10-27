@@ -83,11 +83,12 @@ class BuildSyncClientTest(unittest.TestCase):
             with mock.patch('syncto.authentication.SyncClient'):
                 build_sync_client(self.request)
                 self.assertIn('Alert', self.request.response.headers)
-                self.assertEqual(
-                    self.request.response.headers['Alert'],
-                    '{"url":"https:\\/\\/syncto.readthedocs.org\\/",'
-                    '"message":"X-Client-State headers is deprecated '
-                    'and should not be provided anymore.","code":"soft-eol"}')
+                self.assertDictEqual(
+                    json.loads(self.request.response.headers['Alert']),
+                    {"url": "https://syncto.readthedocs.org/",
+                     "message": "X-Client-State headers is deprecated "
+                     "and should not be provided anymore.",
+                     "code": "soft-eol"})
 
     def test_should_cache_credentials_the_second_time(self):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
