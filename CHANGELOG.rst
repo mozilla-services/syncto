@@ -4,10 +4,15 @@ CHANGELOG
 This document describes changes between each past release.
 
 
-1.3.0 (unreleased)
+1.3.0 (2015-10-27)
 ------------------
 
-- Nothing changed yet.
+- Upgraded to *Cliquet* 2.9.0
+
+**Protocol**
+
+- Client-state id should now be provided through the bucket id in the
+  URL (#62)
 
 
 1.2.0 (2015-10-22)
