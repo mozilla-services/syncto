@@ -29,6 +29,12 @@ $(PYTHON):
 	virtualenv $(VENV)
 	$(VENV)/bin/pip install --upgrade pip
 
+build-requirements:
+	@rm -fr /tmp/syncto
+	$(VIRTUALENV) /tmp/syncto
+	/tmp/syncto/bin/pip install -Ue .
+	/tmp/syncto/bin/pip freeze > requirements.txt
+
 serve: install-dev
 	$(VENV)/bin/cliquet --ini $(SERVER_CONFIG) migrate
 	$(VENV)/bin/pserve $(SERVER_CONFIG) --reload
