@@ -13,11 +13,11 @@ with open(os.path.join(here, 'CHANGELOG.rst')) as f:
 
 
 REQUIREMENTS = [
-    'waitress',
-    'cliquet[monitoring]',
-    'hkdf',
-    'PyNaCl',
-    'syncclient',
+    'waitress>=0.8,<0.9',
+    'cliquet[monitoring]>=2.9,<2.10',
+    'hkdf>=0.0.3,<0.1',
+    'PyNaCl>=0.3,<0.4',
+    'syncclient>=0.6,<0.7',
 ]
 
 if PY2:

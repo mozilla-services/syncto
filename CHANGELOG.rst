@@ -7,6 +7,7 @@ This document describes changes between each past release.
 1.3.0 (2015-10-27)
 ------------------
 
+- Upgraded to *Cliquet* 2.9.0
 - Put the Client-State as bucket_id in the URL (#62)
 
 
