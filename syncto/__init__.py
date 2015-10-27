@@ -17,6 +17,7 @@ else:
 
 AUTHORIZATION_HEADER = 'Authorization'
 CLIENT_STATE_HEADER = 'X-Client-State'
+CLIENT_STATE_LENGTH = 32
 
 DEFAULT_SETTINGS = {
     'project_name': 'syncto',

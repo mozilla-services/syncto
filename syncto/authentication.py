@@ -11,7 +11,8 @@ from cliquet.errors import http_error, ERRORS, send_alert
 from cliquet import utils
 from syncclient.client import SyncClient, TokenserverClient
 
-from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
+from syncto import (AUTHORIZATION_HEADER, CLIENT_STATE_HEADER,
+                    CLIENT_STATE_LENGTH)
 from syncto.crypto import encrypt, decrypt
 
 
@@ -42,9 +43,8 @@ def build_sync_client(request):
                                   message=msg)
             response.headers.extend(forget(request))
             raise response
-        else:
-            client_state = request.headers[CLIENT_STATE_HEADER]
-    elif len(bucket_id) != 32:
+        client_state = request.headers[CLIENT_STATE_HEADER]
+    elif len(bucket_id) != CLIENT_STATE_LENGTH:
         msg = "The provided bucket ID is incorrect."
         response = http_error(httpexceptions.HTTPUnauthorized(),
                               errno=ERRORS.MISSING_AUTH_TOKEN,
@@ -56,7 +56,7 @@ def build_sync_client(request):
 
     if is_client_state_header_defined:
         send_alert(request,
-                   "%s headers is deprecated and should not be "
+                   "%s header is deprecated and should not be "
                    "provided anymore." % CLIENT_STATE_HEADER)
 
     authorization_header = request.headers[AUTHORIZATION_HEADER]

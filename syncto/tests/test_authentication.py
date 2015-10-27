@@ -43,7 +43,7 @@ class BuildSyncClientTest(unittest.TestCase):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234'}
         self.assertRaises(HTTPUnauthorized, build_sync_client, self.request)
 
-    def test_should_not_raise_if_client_state_in_url(self):
+    def test_should_client_state_in_url_is_used_to_setup_sync_client(self):
         request = self.request
         request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234'}
         request.matchdict['bucket_id'] = '601c4497372419ee1789bf931f8c68f5'
@@ -86,7 +86,7 @@ class BuildSyncClientTest(unittest.TestCase):
                 self.assertDictEqual(
                     json.loads(self.request.response.headers['Alert']),
                     {"url": "https://syncto.readthedocs.org/",
-                     "message": "X-Client-State headers is deprecated "
+                     "message": "X-Client-State header is deprecated "
                      "and should not be provided anymore.",
                      "code": "soft-eol"})
 
