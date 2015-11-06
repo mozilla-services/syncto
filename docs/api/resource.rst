@@ -21,7 +21,7 @@ The default collections used by Firefox to store sync data are:
  - forms
  - prefs
  - tabs
- - password
+ - passwords
 
 The following additional collections are used for internal management
 purposes by the storage client:
