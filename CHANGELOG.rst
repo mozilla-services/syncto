@@ -7,7 +7,7 @@ This document describes changes between each past release.
 1.4.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Pass User-Agent header to sync (#68)
 
 
 1.3.0 (2015-10-27)

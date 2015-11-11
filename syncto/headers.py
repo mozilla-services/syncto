@@ -1,11 +1,23 @@
 from cliquet import utils
 from cliquet.errors import raise_invalid
 
+from syncto import __version__
+
 
 def import_headers(syncto_request, sync_request_headers=None):
     """Convert incoming Kinto headers into Sync headers."""
     request_headers = syncto_request.headers
     headers = sync_request_headers or {}
+
+    # For server-side analytics, keep original User-Agent.
+
+    ua = "Syncto/%s" % __version__
+    original_ua = request_headers.get('User-Agent')
+    if original_ua:
+        ua += " (on behalf of %s)" % original_ua
+    headers['User-Agent'] = ua
+
+    # Handle concurrency control.
 
     if 'If-Match' in request_headers:
         if_match = request_headers['If-Match']

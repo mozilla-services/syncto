@@ -5,6 +5,8 @@ from uuid import uuid4
 from cliquet.errors import ERRORS
 from cliquet.tests.support import FormattedErrorMixin
 from requests.exceptions import HTTPError, ConnectionError
+
+from syncto import __version__
 from syncto import AUTHORIZATION_HEADER, CLIENT_STATE_HEADER
 from syncto import main as testapp
 from syncto.heartbeat import ping_sync_cluster
@@ -21,6 +23,9 @@ RECORD_EXAMPLE = {
     }
 }
 
+_USER_AGENT = 'Syncto/%s' % __version__
+_DEFAULT_SYNC_HEADERS = {'User-Agent': _USER_AGENT}
+
 
 class SettingsMissingTest(unittest.TestCase):
     MANDATORY_SETTINGS = {
@@ -34,14 +39,16 @@ class SettingsMissingTest(unittest.TestCase):
         self.assertRaises(ValueError, testapp, {}, **settings)
 
 
-class ErrorsTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
+class KintoJsCompatTest(BaseWebTest, unittest.TestCase):
 
     def test_public_settings_are_shown_in_view_prefixed_with_cliquet(self):
         response = self.app.get('/')
         settings = response.json['settings']
-        expected = {'batch_max_requests': 25,
-                    'cliquet.batch_max_requests': 25}
-        self.assertEqual(expected, settings)
+        self.assertEqual(settings['batch_max_requests'], 25)
+        self.assertEqual(settings['cliquet.batch_max_requests'], 25)
+
+
+class ErrorsTest(FormattedErrorMixin, BaseWebTest, unittest.TestCase):
 
     def test_authorization_header_is_required_for_collection(self):
         resp = self.app.get(COLLECTION_URL, headers=self.headers, status=401)
@@ -190,14 +197,24 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
                             headers=self.headers, status=200)
         self.assertIn('Cache-Control', resp.headers)
 
+    def test_original_user_agent_is_passed_to_sync(self):
+        headers = self.headers.copy()
+        headers['User-Agent'] = 'HTTPie/0.9.2'
+        self.app.get(COLLECTION_URL, headers=headers)
+
+        expected = '%s (on behalf of HTTPie/0.9.2)' % _USER_AGENT
+        self.sync_client.return_value.get_records.assert_called_with(
+            "tabs", full=True, headers={'User-Agent': expected})
+
     def test_collection_handle_since_parameter(self):
         self.app.get(COLLECTION_URL,
                      params={'_since': '14377478425700',
                              '_sort': 'newest'},
                      headers=self.headers, status=200)
+
         self.sync_client.return_value.get_records.assert_called_with(
             "tabs", full=True, newer='14377478425.70', sort='newest',
-            headers={})
+            headers=_DEFAULT_SYNC_HEADERS)
 
     def test_collection_handles_if_none_match_headers(self):
         headers = self.headers.copy()
@@ -206,9 +223,12 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
                      params={'_since': '14377478425700',
                              '_sort': 'newest'},
                      headers=headers, status=200)
+
+        expected = {'X-If-Modified-Since': '14377478425.70'}
+        expected.update(_DEFAULT_SYNC_HEADERS)
         self.sync_client.return_value.get_records.assert_called_with(
             "tabs", full=True, newer='14377478425.70', sort='newest',
-            headers={'X-If-Modified-Since': '14377478425.70'})
+            headers=expected)
 
     def test_collection_handle_if_match_headers(self):
         headers = self.headers.copy()
@@ -217,9 +237,12 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
                      params={'_since': '14377478425700',
                              '_sort': 'newest'},
                      headers=headers, status=200)
+
+        expected = {'X-If-Unmodified-Since': '14377478425.70'}
+        expected.update(_DEFAULT_SYNC_HEADERS)
         self.sync_client.return_value.get_records.assert_called_with(
             "tabs", full=True, newer='14377478425.70', sort='newest',
-            headers={'X-If-Unmodified-Since': '14377478425.70'})
+            headers=expected)
 
     def test_collection_raises_on_wrong_if_none_match_header_value(self):
         headers = self.headers.copy()
@@ -255,14 +278,14 @@ class CollectionTest(FormattedErrorMixin, BaseViewTest):
                      headers=self.headers, status=200)
         self.sync_client.return_value.get_records.assert_called_with(
             "tabs", full=True, limit='2', offset='12345', sort='index',
-            headers={})
+            headers=_DEFAULT_SYNC_HEADERS)
 
     def test_collection_handles_oldest_sort(self):
         self.app.get(COLLECTION_URL,
                      params={'_sort': 'oldest'},
                      headers=self.headers, status=200)
         self.sync_client.return_value.get_records.assert_called_with(
-            "tabs", full=True, sort='oldest', headers={})
+            "tabs", full=True, sort='oldest', headers=_DEFAULT_SYNC_HEADERS)
 
     def test_collection_raises_with_invalid_sort_parameter(self):
         resp = self.app.get(COLLECTION_URL,
@@ -340,11 +363,13 @@ class RecordTest(BaseViewTest):
 
         headers = self.headers.copy()
         headers['If-Match'] = '"14377478425700"'
-
         self.app.delete(RECORD_URL, headers=headers, status=204)
+
+        expected = {'X-If-Unmodified-Since': '14377478425.70'}
+        expected.update(_DEFAULT_SYNC_HEADERS)
         self.sync_client.return_value.delete_record.assert_called_with(
             "tabs", RECORD_URL.split('/')[-1],
-            headers={'X-If-Unmodified-Since': '14377478425.70'})
+            headers=expected)
 
     def test_delete_return_a_503_in_case_of_unknown_error(self):
         response = mock.MagicMock()
@@ -384,10 +409,11 @@ class RecordTest(BaseViewTest):
 
         self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
                           headers=headers, status=200)
-        put_record_mock = self.sync_client.return_value.put_record
-        self.assertDictEqual(
-            put_record_mock.mock_calls[0][2]['headers'],
-            {'X-If-Unmodified-Since': 0})
+
+        expected = {'X-If-Unmodified-Since': 0}
+        expected.update(_DEFAULT_SYNC_HEADERS)
+        put_record_arg = self.sync_client.return_value.put_record.mock_calls[0]
+        self.assertDictEqual(put_record_arg[2]['headers'], expected)
 
     def test_put_record_reject_invalid_record(self):
         invalid = {"payload": "foobar"}
