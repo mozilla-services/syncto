@@ -5,6 +5,7 @@ from requests.exceptions import HTTPError, RequestException
 
 from cliquet import logger
 from cliquet.errors import http_error, ERRORS
+from cliquet.statsd import statsd_count
 from cliquet.utils import reapply_cors
 from cliquet.views.errors import service_unavailable
 
@@ -18,11 +19,8 @@ def response_error(context, request):
                              context.response.reason,
                              context.response.text)
 
-    statsd = request.registry.statsd
-
-    if statsd:
-        statsd.count("syncclient.status_code.%s" %
-                     context.response.status_code)
+    statsd_count(request, "syncclient.status_code.%s" %
+                 context.response.status_code)
 
     if context.response.status_code in (400, 401, 403, 404):
         # For this code we also want to log the info about the error.
