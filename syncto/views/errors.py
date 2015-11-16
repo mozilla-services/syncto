@@ -19,6 +19,7 @@ def response_error(context, request):
                              context.response.reason,
                              context.response.text)
 
+    # XXX: Make sure these HTTPError exception are coming from SyncClient.
     statsd_count(request, "syncclient.status_code.%s" %
                  context.response.status_code)
 
