@@ -27,7 +27,7 @@ DEFAULT_SETTINGS = {
     'cache_credentials_ttl_seconds': 300,
     'token_server_url': 'https://token.services.mozilla.com/',
     'token_server_heartbeat_timeout_seconds': 5,
-    'requests_verify_certificate_ca_bundle': None,
+    'certificate_ca_bundle': None,
 }
 
 
@@ -49,7 +49,7 @@ def main(global_config, **settings):
         raise ValueError(error_msg)
 
     # Handle Certificate Pinning file.
-    ca_bundle_path = settings['requests_verify_certificate_ca_bundle']
+    ca_bundle_path = settings['certificate_ca_bundle']
     if ca_bundle_path is not None:
         ca_bundle_abspath = os.path.abspath(ca_bundle_path)
         if not os.path.isfile(ca_bundle_abspath):
@@ -57,7 +57,7 @@ def main(global_config, **settings):
             raise ValueError(error_msg)
 
         config.add_settings({
-            'requests_verify_certificate_ca_bundle': ca_bundle_abspath
+            'certificate_ca_bundle': ca_bundle_abspath
         })
 
     config.scan("syncto.views")
