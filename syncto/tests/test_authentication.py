@@ -19,7 +19,9 @@ class BuildSyncClientTest(unittest.TestCase):
             'project_docs': 'https://syncto.readthedocs.org/',
             'cache_hmac_secret': 'This is not a secret',
             'cache_credentials_ttl_seconds': 300,
-            'token_server_url': 'https://token.services.mozilla.com/'})
+            'token_server_url': 'https://token.services.mozilla.com/',
+            'certificate_ca_bundle': None,
+        })
 
         self.request.registry.cache = Cache()
 
@@ -54,8 +56,8 @@ class BuildSyncClientTest(unittest.TestCase):
                 build_sync_client(request)
                 TSClient.assert_called_with(
                     '1234', '601c4497372419ee1789bf931f8c68f5',
-                    'https://token.services.mozilla.com/')
-                SyncClient.assert_called_with(**self.credentials)
+                    'https://token.services.mozilla.com/', verify=None)
+                SyncClient.assert_called_with(verify=None, **self.credentials)
 
     def test_should_raise_if_client_state_is_url_is_wrong(self):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234'}
@@ -71,8 +73,9 @@ class BuildSyncClientTest(unittest.TestCase):
             with mock.patch('syncto.authentication.SyncClient') as SyncClient:
                 build_sync_client(self.request)
                 TSClient.assert_called_with(
-                    '1234', '12345', 'https://token.services.mozilla.com/')
-                SyncClient.assert_called_with(**self.credentials)
+                    '1234', '12345', 'https://token.services.mozilla.com/',
+                    verify=None)
+                SyncClient.assert_called_with(verify=None, **self.credentials)
 
     def test_should_return_an_alert_if_client_state_header_is_used(self):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
@@ -100,13 +103,14 @@ class BuildSyncClientTest(unittest.TestCase):
             with mock.patch('syncto.authentication.SyncClient') as SyncClient:
                 # First call
                 build_sync_client(self.request)
-                SyncClient.assert_called_with(**self.credentials)
+                SyncClient.assert_called_with(verify=None, **self.credentials)
                 # Second time
                 build_sync_client(self.request)
                 # TokenServerClient should have been called only once.
                 TSClient.assert_called_once_with(
-                    '1234', '12345', 'https://token.services.mozilla.com/')
-                SyncClient.assert_called_with(**self.credentials)
+                    '1234', '12345', 'https://token.services.mozilla.com/',
+                    verify=None)
+                SyncClient.assert_called_with(verify=None, **self.credentials)
 
     def test_credentials_should_be_cached_encrypted(self):
         self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
@@ -240,3 +244,21 @@ class BuildSyncClientTest(unittest.TestCase):
                     args, _ = tuple(mocked_set.call_args_list[-1])
                     ttl = args[-1]
                     self.assertNotEqual(int(ttl), 3600)
+
+    def test_should_handle_the_certificate_ca_parameters(self):
+        digicert_ca_bundle = '../certificates/DigiCert.Global-Root-CA.crt'
+        self.request.registry.settings.update({
+            'certificate_ca_bundle': digicert_ca_bundle,
+        })
+        self.request.headers = {AUTHORIZATION_HEADER: 'Browserid 1234',
+                                CLIENT_STATE_HEADER: '12345'}
+        with mock.patch('syncto.authentication.TokenserverClient') as TSClient:
+            TSClient.return_value.get_hawk_credentials.return_value = \
+                self.credentials
+            with mock.patch('syncto.authentication.SyncClient') as SyncClient:
+                build_sync_client(self.request)
+                TSClient.assert_called_once_with(
+                    '1234', '12345', 'https://token.services.mozilla.com/',
+                    verify=digicert_ca_bundle)
+                SyncClient.assert_called_once_with(verify=digicert_ca_bundle,
+                                                   **self.credentials)

@@ -1,4 +1,5 @@
 import mock
+import os
 from contextlib import contextmanager
 from uuid import uuid4
 
@@ -12,6 +13,8 @@ from syncto import main as testapp
 from syncto.heartbeat import ping_sync_cluster
 
 from .support import BaseWebTest, unittest
+
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 
 COLLECTION_URL = "/buckets/syncto/collections/tabs/records"
@@ -37,6 +40,22 @@ class SettingsMissingTest(unittest.TestCase):
         # Remove the mandatory setting we want to test
         del settings['cache_hmac_secret']
         self.assertRaises(ValueError, testapp, {}, **settings)
+
+    def test_syncto_certificate_ca_bundle_file_not_found(self):
+        settings = self.MANDATORY_SETTINGS.copy()
+        # Remove the mandatory setting we want to test
+        settings['certificate_ca_bundle'] = 'foobar.crt'
+        self.assertRaises(ValueError, testapp, {}, **settings)
+
+    def test_syncto_certificate_ca_bundle_relative_file_found(self):
+        settings = self.MANDATORY_SETTINGS.copy()
+        # Remove the mandatory setting we want to test
+        digicert_ca_bundle = 'certificates/DigiCert.Global-Root-CA.crt'
+        settings['certificate_ca_bundle'] = digicert_ca_bundle
+        app = testapp({}, **settings)
+        self.assertEqual(app.registry.settings['certificate_ca_bundle'],
+                         os.path.normpath(os.path.join(
+                             HERE, '..', '..', digicert_ca_bundle)))
 
 
 class KintoJsCompatTest(BaseWebTest, unittest.TestCase):
