@@ -1,9 +1,11 @@
 import re
 
 import colander
-from cliquet import Service, schema, errors
 from pyramid import httpexceptions
 from pyramid.security import NO_PERMISSION_REQUIRED
+
+from cliquet import Service, schema, errors
+from cliquet.statsd import statsd_count
 
 from syncto.authentication import build_sync_client
 from syncto.headers import import_headers, export_headers
@@ -61,9 +63,7 @@ def record_get(request):
     # Configure headers
     export_headers(sync_client.raw_resp, request)
 
-    statsd = request.registry.statsd
-    if statsd:
-        statsd.count("syncclient.status_code.200")
+    statsd_count(request, "syncclient.status_code.200")
 
     return {'data': record}
 
@@ -93,9 +93,7 @@ def record_put(request):
     # Configure headers
     export_headers(sync_client.raw_resp, request)
 
-    statsd = request.registry.statsd
-    if statsd:
-        statsd.count("syncclient.status_code.200")
+    statsd_count(request, "syncclient.status_code.200")
 
     return {'data': record}
 
@@ -113,9 +111,7 @@ def record_delete(request):
     sync_client = build_sync_client(request)
     sync_client.delete_record(collection_name, sync_id, headers=headers)
 
-    statsd = request.registry.statsd
-    if statsd:
-        statsd.count("syncclient.status_code.204")
+    statsd_count(request, "syncclient.status_code.204")
 
     request.response.status_code = 204
     del request.response.headers['Content-Type']

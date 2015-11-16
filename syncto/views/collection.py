@@ -1,6 +1,7 @@
 from pyramid.security import NO_PERMISSION_REQUIRED
 
 from cliquet import Service
+from cliquet.statsd import statsd_count
 from cliquet.errors import raise_invalid
 
 from syncto.authentication import build_sync_client
@@ -64,9 +65,7 @@ def collection_get(request):
     records = sync_client.get_records(collection_name, full=True,
                                       headers=headers, **params)
 
-    statsd = request.registry.statsd
-    if statsd:
-        statsd.count("syncclient.status_code.200")
+    statsd_count(request, "syncclient.status_code.200")
 
     for r in records:
         r['last_modified'] = int(r.pop('modified') * 1000)
