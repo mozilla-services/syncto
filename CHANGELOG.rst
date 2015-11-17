@@ -4,10 +4,15 @@ CHANGELOG
 This document describes changes between each past release.
 
 
-1.4.0 (unreleased)
+1.4.0 (2015-11-17)
 ------------------
 
-- Pass User-Agent header to sync (#68)
+- Upgraded to *Cliquet* 2.11.0
+
+**Features**
+
+- Pass User-Agent header to sync. (#68)
+- Add trusted certificate pinning support. (#72)
 
 
 1.3.0 (2015-10-27)
