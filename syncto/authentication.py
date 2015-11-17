@@ -70,6 +70,7 @@ def build_sync_client(request):
     hmac_secret = settings['cache_hmac_secret']
     cache_key = 'credentials_%s' % utils.hmac_digest(hmac_secret,
                                                      bid_assertion)
+    ca_bundle = settings['certificate_ca_bundle']
 
     encrypted_credentials = cache.get(cache_key)
 
@@ -79,7 +80,7 @@ def build_sync_client(request):
         ttl = min(settings_ttl, bid_ttl or settings_ttl)
 
         tokenserver = TokenserverClient(bid_assertion, client_state,
-                                        token_server_url)
+                                        token_server_url, verify=ca_bundle)
         if statsd:
             statsd.watch_execution_time(tokenserver, prefix="tokenserver")
         credentials = tokenserver.get_hawk_credentials(duration=ttl)
@@ -93,7 +94,7 @@ def build_sync_client(request):
         timer = statsd.timer("syncclient.start_time")
         timer.start()
 
-    sync_client = SyncClient(**credentials)
+    sync_client = SyncClient(verify=ca_bundle, **credentials)
 
     if statsd:
         timer.stop()
