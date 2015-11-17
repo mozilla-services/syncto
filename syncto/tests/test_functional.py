@@ -16,6 +16,9 @@ from .support import BaseWebTest, unittest
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
+MANDATORY_SETTINGS = {
+    'cache_hmac_secret': 'This is not a secret'
+}
 
 COLLECTION_URL = "/buckets/syncto/collections/tabs/records"
 RECORD_URL = "/buckets/syncto/collections/tabs/records/%s" % uuid4()
@@ -31,24 +34,21 @@ _DEFAULT_SYNC_HEADERS = {'User-Agent': _USER_AGENT}
 
 
 class SettingsMissingTest(unittest.TestCase):
-    MANDATORY_SETTINGS = {
-        'cache_hmac_secret': 'This is not a secret'
-    }
 
     def test_syncto_cache_hmac_secret_missing(self):
-        settings = self.MANDATORY_SETTINGS.copy()
+        settings = MANDATORY_SETTINGS.copy()
         # Remove the mandatory setting we want to test
         del settings['cache_hmac_secret']
         self.assertRaises(ValueError, testapp, {}, **settings)
 
     def test_syncto_certificate_ca_bundle_file_not_found(self):
-        settings = self.MANDATORY_SETTINGS.copy()
+        settings = MANDATORY_SETTINGS.copy()
         # Remove the mandatory setting we want to test
         settings['certificate_ca_bundle'] = 'foobar.crt'
         self.assertRaises(ValueError, testapp, {}, **settings)
 
     def test_syncto_certificate_ca_bundle_relative_file_found(self):
-        settings = self.MANDATORY_SETTINGS.copy()
+        settings = MANDATORY_SETTINGS.copy()
         # Remove the mandatory setting we want to test
         digicert_ca_bundle = 'certificates/DigiCert.Global-Root-CA.crt'
         settings['certificate_ca_bundle'] = digicert_ca_bundle
