@@ -9,10 +9,12 @@ This document describes changes between each past release.
 
 - Upgraded to *Cliquet* 2.11.0
 
-**Features**
+**New Features**
 
 - Pass User-Agent header to sync. (#68)
 - Add trusted certificate pinning support. (#72)
+
+See also `*Cliquet* changes <https://github.com/mozilla-services/cliquet/releases/2.11.0>`_
 
 
 1.3.0 (2015-10-27)
