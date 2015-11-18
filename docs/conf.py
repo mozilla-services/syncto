@@ -29,7 +29,9 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 # Copy the docs from Cliquet inside these ones.
 destination = os.path.join(__HERE__, 'api', 'cliquet')
 cliquet_docs.copy_docs('api', destination)
-
+os.remove(os.path.join(destination, 'index.rst'))
+os.remove(os.path.join(destination, 'authentication.rst'))
+os.remove(os.path.join(destination, 'resource.rst'))
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

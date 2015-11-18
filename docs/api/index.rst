@@ -6,6 +6,7 @@ API Endpoints
 .. toctree::
 
    resource
+   cliquet/utilities
    cliquet/versioning
    cliquet/batch
    cliquet/timestamps
