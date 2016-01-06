@@ -424,7 +424,7 @@ class RecordTest(BaseViewTest):
 
     def test_put_record_handles_if_none_match_headers(self):
         headers = self.headers.copy()
-        headers['If-None-Match'] = '"*"'
+        headers['If-None-Match'] = '*'
 
         self.app.put_json(RECORD_URL, RECORD_EXAMPLE,
                           headers=headers, status=200)

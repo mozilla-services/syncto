@@ -18,7 +18,6 @@ def import_headers(syncto_request, sync_request_headers=None):
     headers['User-Agent'] = ua
 
     # Handle concurrency control.
-
     if 'If-Match' in request_headers:
         if_match = request_headers['If-Match']
         try:
@@ -36,7 +35,7 @@ def import_headers(syncto_request, sync_request_headers=None):
 
     if 'If-None-Match' in request_headers:
         if_none_match = request_headers['If-None-Match']
-        if if_none_match == '"*"':
+        if if_none_match == '*':
             headers['X-If-Unmodified-Since'] = 0
         else:
             try:
