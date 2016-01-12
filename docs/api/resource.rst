@@ -288,7 +288,7 @@ only endpoint that you can use either to create new record or to
 update them.
 
 If you want to make sure that you don't erase an existing record when
-creating one, you can use the ``If-None-Match: "*"`` header value.
+creating one, you can use the ``If-None-Match: *`` header value.
 
 The PUT response body is a JSON mapping containing:
 
