@@ -434,6 +434,24 @@ class RecordTest(BaseViewTest):
         put_record_arg = self.sync_client.return_value.put_record.mock_calls[0]
         self.assertDictEqual(put_record_arg[2]['headers'], expected)
 
+    def test_412_error_is_forwared_in_batch(self):
+        request = {
+            'method': 'PUT',
+            'path': RECORD_URL,
+            'body': RECORD_EXAMPLE,
+            'headers': self.headers
+        }
+        body = {'requests': [request, request]}
+
+        self.sync_client.return_value.put_record.side_effect = [
+            mock.MagicMock(status_code=201),
+            HTTPError(response=mock.MagicMock(status_code=412))
+        ]
+
+        resp = self.app.post_json('/batch', body, status=200)
+        self.assertEqual(resp.json['responses'][0]['status'], 200)
+        self.assertEqual(resp.json['responses'][1]['status'], 412)
+
     def test_put_record_reject_invalid_record(self):
         invalid = {"payload": "foobar"}
         self.app.put_json(RECORD_URL, invalid, headers=self.headers,
