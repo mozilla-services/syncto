@@ -13,12 +13,12 @@ This document describes changes between each past release.
 
 **Bug fixes**
 
-- Fix If-None-Match header format (#76)
+- Fix ``If-None-Match`` header format which doesn't take quote around the ``*`` parameter. (#76)
 
 **Internal changes**
 
 - Add a Dockerfile (#77)
-- Remode documentation warnings (#74)
+- Remove documentation warnings (#74)
 
 
 1.4.0 (2015-11-17)
