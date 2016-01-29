@@ -13,11 +13,11 @@ with open(os.path.join(here, 'CHANGELOG.rst')) as f:
 
 
 REQUIREMENTS = [
-    'waitress>=0.8,<0.9',
-    'cliquet[monitoring]>=2.15,<2.16',
-    'hkdf==0.0.3',
-    'PyNaCl>=1.0,<1.1',
-    'syncclient>=0.8,<0.9',
+    'waitress',
+    'cliquet[monitoring]',
+    'hkdf',
+    'PyNaCl',
+    'syncclient',
 ]
 
 if PY2:
@@ -33,7 +33,7 @@ ENTRY_POINTS = {
     ]}
 
 setup(name='syncto',
-      version='1.5.0',
+      version='1.6.0.dev0',
       description='Read Firefox Sync server using Kinto API.',
       long_description=README + "\n\n" + CHANGELOG,
       license='Apache License (2.0)',
