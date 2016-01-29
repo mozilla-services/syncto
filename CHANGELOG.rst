@@ -13,6 +13,8 @@ This document describes changes between each past release.
 1.5.0 (2016-01-27)
 ------------------
 
+- Upgraded to *Cliquet* 2.15.0
+
 **Protocol**
 
 - Make sure batch always return 200 except for 5xx errors. (#78)
