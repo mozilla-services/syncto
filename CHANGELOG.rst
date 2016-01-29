@@ -4,10 +4,21 @@ CHANGELOG
 This document describes changes between each past release.
 
 
-1.5.0 (unreleased)
+1.5.0 (2016-01-27)
 ------------------
 
-- Nothing changed yet.
+**Protocol**
+
+- Make sure batch always return 200 except for 5xx errors. (#78)
+
+**Bug fixes**
+
+- Fix ``If-None-Match`` header format which doesn't take quote around the ``*`` parameter. (#76)
+
+**Internal changes**
+
+- Add a Dockerfile (#77)
+- Remove documentation warnings (#74)
 
 
 1.4.0 (2015-11-17)

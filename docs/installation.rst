@@ -134,9 +134,9 @@ However, the set of settings mentionned below might deserve some review or adjus
 :note:
 
     For an exhaustive list of available settings and their default values,
-    refer to `cliquet source code <https://github.com/mozilla-services/cliquet/blob/2.10.2/cliquet/__init__.py#L27-L88>`_.
+    refer to `cliquet source code <https://github.com/mozilla-services/cliquet/blob/2.15.0/cliquet/__init__.py#L26-L89>`_.
 
-     Click here for `Syncto specific settings <https://github.com/mozilla-services/syncto/blob/1.4.0/syncto/__init__.py#L23-L31>`_
+     Click here for `Syncto specific settings <https://github.com/mozilla-services/syncto/blob/1.5.0/syncto/__init__.py#L23-L31>`_
 
 
 Enable write access
