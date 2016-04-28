@@ -22,7 +22,7 @@ CLIENT_STATE_LENGTH = 32
 
 DEFAULT_SETTINGS = {
     'project_name': 'syncto',
-    'project_docs': 'https://syncto.readthedocs.org/',
+    'project_docs': 'https://syncto.readthedocs.io/',
     'cache_hmac_secret': None,
     'cache_credentials_ttl_seconds': 300,
     'token_server_url': 'https://token.services.mozilla.com/',

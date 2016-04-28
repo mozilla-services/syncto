@@ -5,9 +5,9 @@ Installation
 Run locally
 ===========
 
-*Syncto* is based on top of the `cliquet <https://cliquet.readthedocs.org>`_
+*Syncto* is based on top of the `cliquet <https://cliquet.readthedocs.io>`_
 project, and as such, you may wanto to refer to
-`cliquet's documentation <https://cliquet.readthedocs.org/>`_ for more details.
+`cliquet's documentation <https://cliquet.readthedocs.io/>`_ for more details.
 
 
 For development

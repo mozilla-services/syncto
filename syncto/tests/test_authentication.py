@@ -16,7 +16,7 @@ class BuildSyncClientTest(unittest.TestCase):
     def setUp(self):
         self.request = DummyRequest()
         self.request.registry.settings.update({
-            'project_docs': 'https://syncto.readthedocs.org/',
+            'project_docs': 'https://syncto.readthedocs.io/',
             'cache_hmac_secret': 'This is not a secret',
             'cache_credentials_ttl_seconds': 300,
             'token_server_url': 'https://token.services.mozilla.com/',
@@ -88,7 +88,7 @@ class BuildSyncClientTest(unittest.TestCase):
                 self.assertIn('Alert', self.request.response.headers)
                 self.assertDictEqual(
                     json.loads(self.request.response.headers['Alert']),
-                    {"url": "https://syncto.readthedocs.org/",
+                    {"url": "https://syncto.readthedocs.io/",
                      "message": "X-Client-State header is deprecated "
                      "and should not be provided anymore.",
                      "code": "soft-eol"})

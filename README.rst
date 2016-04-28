@@ -7,7 +7,7 @@ Syncto
     :target: https://travis-ci.org/mozilla-services/syncto
 
 .. |readthedocs| image:: https://readthedocs.org/projects/syncto/badge/?version=latest
-    :target: http://syncto.readthedocs.org/en/latest/
+    :target: http://syncto.readthedocs.io/en/latest/
     :alt: Documentation Status
 
 .. |master-coverage| image::
@@ -19,5 +19,5 @@ Syncto is a server allowing you to store and retrieve Firefox Sync
 user data attached to your Firefox account using a subset of the Kinto
 API in order to be able to use Kinto.js for that task.
 
-* `Online documentation <http://syncto.readthedocs.org/en/latest/>`_
+* `Online documentation <http://syncto.readthedocs.io/en/latest/>`_
 * `Issue tracker <https://github.com/mozilla-services/syncto/issues>`_
